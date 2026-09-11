@@ -1,11 +1,26 @@
+import model.Projeto;
 
 public class Main {
-    public static void main(String[] args) {    
-        System.out.println("==============================");
-        System.out.println("      SISTEMA DE PROJETOS     ");
-        System.out.println("==============================");
-        System.out.println("Projeto Portifolio Acadêmico");
-        System.out.println("Desenvolvido em Java");
-        System.out.println("Versao: 1.0");
+    public static void main(String[] args) {
+        Projeto projeto1 = new Projeto(
+            1,
+            "Sistema Acadêmico",
+            "Sistema para gerenciamento acadêmico",
+            "Software",
+            "Em desenvolvimento"
+        );
+
+        Projeto projeto2 = new Projeto(
+            2,
+            "Site Institucional",
+            "Website de uma Instituição",
+            "Web",
+            "Concluído"
+        );
+        
+        System.out.println("Projeto 1:");
+        projeto1.exibirDados();
+        System.out.println("Projeto 2:");
+        projeto2.exibirDados();
     }
 }
