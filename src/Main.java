@@ -1,8 +1,13 @@
 import model.Projeto;
+import service.ProjetoService;
 
 public class Main {
+
     public static void main(String[] args) {
-        Projeto projeto1 = new Projeto(
+
+        ProjetoService service = new ProjetoService();
+
+        Projeto p1 = new Projeto(
             1,
             "Sistema Acadêmico",
             "Sistema para gerenciamento acadêmico",
@@ -10,17 +15,28 @@ public class Main {
             "Em desenvolvimento"
         );
 
-        Projeto projeto2 = new Projeto(
+        Projeto p2 = new Projeto(
             2,
             "Site Institucional",
-            "Website de uma Instituição",
+            "Website institucional",
             "Web",
             "Concluído"
         );
-        
-        System.out.println("Projeto 1:");
-        projeto1.exibirDados();
-        System.out.println("Projeto 2:");
-        projeto2.exibirDados();
+
+        Projeto p3 = new Projeto(
+            3,
+            "Aplicativo Mobile",
+            "Aplicativo de serviços",
+            "Mobile",
+            "Planejado"
+        );
+
+        service.adicionarProjeto(p1);
+
+        for (Projeto projeto : service.listarProjetos()) {
+            projeto.exibirDados();
+        }
+
     }
 }
+
