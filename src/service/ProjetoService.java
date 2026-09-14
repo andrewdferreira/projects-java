@@ -2,6 +2,7 @@ package service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import model.Projeto;
 
@@ -14,8 +15,19 @@ public class ProjetoService {
     // Método construtor instanciou o objeto
     }
 
-    public void adicionarProjeto(Projeto projeto) {
+    public boolean adicionarProjeto(Projeto projeto) {
+        Projeto existente = buscarPorId(projeto.getId());
+
+        if (projeto.getNome() == null || projeto.getNome().isBlank()) {
+            return false;
+        }
+        if (existente != null) {
+            return false;
+        }
+
         projetos.add(projeto);
+
+        return true;
     }
 
     public List<Projeto> listarProjetos() {
@@ -60,8 +72,38 @@ public class ProjetoService {
 
         if (projeto != null) {
                 projetos.remove(projeto);
+                System.out.println("Projeto com ID " + id + " removido com sucesso");
                 return true;
             }
         return false;
     }
+
+    public int contarPorCategoria(String categoria) {
+        return buscarPorCategoria(categoria).size();
+    }
+
+    public boolean alterarStatus(int id, String novoStatus) {
+        Projeto projeto = buscarPorId(id);
+
+        if (projeto == null) {
+            return false;
+        }
+
+        projeto.setStatus(novoStatus);
+        return true;
+    }
+
+    public List<Projeto> buscarPorNome(String texto) {
+        List<Projeto> resultado = new ArrayList<>();
+
+        for (Projeto projeto : projetos) {
+            if (projeto.getNome().toLowerCase().contains(texto.toLowerCase())) {
+                resultado.add(projeto);
+            }
+        }
+
+        return resultado;
+    }
+
+
 }
