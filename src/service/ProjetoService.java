@@ -11,6 +11,7 @@ public class ProjetoService {
     private List<Projeto> projetos;
     private ProjetoCSV dao;
     // Ainda não instanciado
+    //Que guerra
 
     public ProjetoService() {
         projetos = new ArrayList<>();
