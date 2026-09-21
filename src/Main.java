@@ -1,16 +1,20 @@
 import model.Projeto;
 import service.ProjetoService;
+import dao.ProjetoCSV;
 
 public class Main {
 
-    public static void main(String[] args) {
+    public static void main(String[] args)
+        throws Exception {
 
         ProjetoService service = new ProjetoService();
 
+        ProjetoCSV dao = new ProjetoCSV();
+
         Projeto p1 = new Projeto(
             1,
-            "Sistema Acadêmico",
-            "Sistema para gerenciamento acadêmico",
+            "Sistema Academico",
+            "Sistema para gerenciamento academico",
             "Software",
             "Em desenvolvimento"
         );
@@ -20,15 +24,7 @@ public class Main {
             "Site Institucional",
             "Website institucional",
             "Web",
-            "Concluído"
-        );
-
-        Projeto p3 = new Projeto(
-            3,
-            "Aplicativo Mobile",
-            "Aplicativo de serviços",
-            "Mobile",
-            "Planejado"
+            "Concluido"
         );
 
         Projeto p4 = new Projeto(
@@ -50,7 +46,6 @@ public class Main {
 
         service.adicionarProjeto(p1);
         service.adicionarProjeto(p2);
-        service.adicionarProjeto(p3);
         service.adicionarProjeto(p4);
         service.adicionarProjeto(p5);
 
@@ -120,6 +115,10 @@ public class Main {
             projeto.exibirDados();
             System.out.println("------------------------");
         }
+
+        dao.salvar(service.listarProjetos());
+
+        System.out.println("Dados salvos com sucesso!");
+
     }
 }
-

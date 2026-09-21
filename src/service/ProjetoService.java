@@ -5,9 +5,11 @@ import java.util.List;
 import java.util.Locale;
 
 import model.Projeto;
+import dao.ProjetoCSV;
 
 public class ProjetoService {
     private List<Projeto> projetos;
+    private ProjetoCSV dao;
     // Ainda não instanciado
 
     public ProjetoService() {
