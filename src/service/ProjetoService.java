@@ -11,10 +11,10 @@ public class ProjetoService {
     private List<Projeto> projetos;
     private ProjetoCSV dao;
     // Ainda não instanciado
-    //Que guerra
 
     public ProjetoService() {
         projetos = new ArrayList<>();
+        dao = new ProjetoCSV();
     // Método construtor instanciou o objeto
     }
 
@@ -108,5 +108,27 @@ public class ProjetoService {
         return resultado;
     }
 
+    public void carregarProjetos() throws Exception {
+        projetos = dao.listar();
+    }
+
+    public void salvar() throws Exception {
+        dao.salvar(projetos);
+    }
+
+    public boolean alterarProjeto(Projeto projetoAtualizado) {
+        Projeto projeto = buscarPorId(projetoAtualizado.getId());
+
+        if (projeto == null) {
+            return false;
+        }
+
+        projeto.setNome(projetoAtualizado.getNome());
+        projeto.setDescricao(projetoAtualizado.getDescricao());
+        projeto.setCategoria(projetoAtualizado.getCategoria());
+        projeto.setStatus(projetoAtualizado.getStatus());
+        return true;
+    }
+ 
 
 }
