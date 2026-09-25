@@ -10,6 +10,7 @@ import dao.ProjetoCSV;
 public class ProjetoService {
     private List<Projeto> projetos;
     private ProjetoCSV dao;
+
     // Ainda não instanciado
 
     public ProjetoService() {
