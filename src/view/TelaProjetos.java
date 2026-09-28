@@ -1,5 +1,7 @@
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import service.ProjetoService;
+import model.Projeto;
 
 public class TelaProjetos extends JFrame {
 
@@ -16,6 +18,7 @@ public class TelaProjetos extends JFrame {
     private JButton botaoLimpar;
 
     private ProjetoService service;
+    private Projeto projeto;
 
     public TelaProjetos() {
         service = new ProjetoService();
@@ -138,7 +141,7 @@ public class TelaProjetos extends JFrame {
         status
     );
 
-    service.adicionar(projeto);
+    service.adicionarProjeto(projeto);
 
     service.salvar();
 
@@ -151,7 +154,7 @@ public class TelaProjetos extends JFrame {
 
     modelo.setRowCount(0);
 
-    for (Projeto projeto : service.listar()) {
+    for (Projeto projeto : service.listarProjetos()) {
 
         modelo.addRow(
             new Object[]{
