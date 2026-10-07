@@ -11,23 +11,18 @@ public class ProjetoService {
     private List<Projeto> projetos;
     private ProjetoCSV dao;
 
-    // Ainda não instanciado
-
     public ProjetoService() {
         projetos = new ArrayList<>();
         dao = new ProjetoCSV();
-    // Método construtor instanciou o objeto
     }
 
     public boolean adicionarProjeto(Projeto projeto) {
-        Projeto existente = buscarPorId(projeto.getId());
 
         if (projeto.getNome() == null || projeto.getNome().isBlank()) {
             return false;
         }
-        if (existente != null) {
-            return false;
-        }
+
+        projeto.setId(proximoId());
 
         projetos.add(projeto);
 
@@ -40,7 +35,7 @@ public class ProjetoService {
 
     public Projeto buscarPorId(int id) {
         for (Projeto projeto : projetos) {
-            if(projeto.getId() == id) {
+            if (projeto.getId() == id) {
                 return projeto;
             }
         }
@@ -75,10 +70,10 @@ public class ProjetoService {
         Projeto projeto = buscarPorId(id);
 
         if (projeto != null) {
-                projetos.remove(projeto);
-                System.out.println("Projeto com ID " + id + " removido com sucesso");
-                return true;
-            }
+            projetos.remove(projeto);
+            System.out.println("Projeto com ID " + id + " removido com sucesso");
+            return true;
+        }
         return false;
     }
 
@@ -115,10 +110,23 @@ public class ProjetoService {
 
     public void salvar() throws Exception {
         dao.salvar(projetos);
+        carregarProjetos();
     }
 
-    public boolean alterarProjeto(Projeto projetoAtualizado) {
-        Projeto projeto = buscarPorId(projetoAtualizado.getId());
+    public int proximoId() {
+        int maior = 0;
+
+        for (Projeto projeto : projetos) {
+            if (projeto.getId() > maior) {
+                maior = projeto.getId();
+            }
+        }
+
+        return maior + 1;
+    }
+
+    public boolean alterarProjeto(int id, Projeto projetoAtualizado) {
+        Projeto projeto = buscarPorId(id);
 
         if (projeto == null) {
             return false;
@@ -130,6 +138,5 @@ public class ProjetoService {
         projeto.setStatus(projetoAtualizado.getStatus());
         return true;
     }
- 
 
 }

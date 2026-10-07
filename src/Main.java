@@ -1,18 +1,25 @@
 import java.util.Scanner;
 
+import api.Api;
+import view.TelaProjetos;
 import model.Projeto;
 import service.ProjetoService;
 
 public class Main {
 
     public static void main(String[] args)
-        throws Exception {
+            throws Exception {
+
+        Api.main();
+
+        TelaProjetos tela = new TelaProjetos();
+        tela.setVisible(true);
 
         Scanner scanner =
-            new Scanner(System.in);
+                new Scanner(System.in);
 
         ProjetoService service =
-            new ProjetoService();
+                new ProjetoService();
 
         service.carregarProjetos();
 
@@ -22,45 +29,45 @@ public class Main {
 
             System.out.println();
             System.out.println(
-                "========================================"
+                    "========================================"
             );
             System.out.println(
-                "       SISTEMA DE PROJETOS"
+                    "       SISTEMA DE PROJETOS"
             );
             System.out.println(
-                "========================================"
-            );
-
-            System.out.println(
-                "1 - Listar projetos"
+                    "========================================"
             );
 
             System.out.println(
-                "2 - Buscar projeto"
+                    "1 - Listar projetos"
             );
 
             System.out.println(
-                "3 - Cadastrar projeto"
+                    "2 - Buscar projeto"
             );
 
             System.out.println(
-                "4 - Alterar projeto"
+                    "3 - Cadastrar projeto"
             );
 
             System.out.println(
-                "5 - Excluir projeto"
+                    "4 - Alterar projeto"
             );
 
             System.out.println(
-                "0 - Sair"
+                    "5 - Excluir projeto"
+            );
+
+            System.out.println(
+                    "0 - Sair"
             );
 
             System.out.print(
-                "Escolha: "
+                    "Escolha: "
             );
 
             opcao =
-                scanner.nextInt();
+                    scanner.nextInt();
 
             scanner.nextLine();
 
@@ -69,7 +76,7 @@ public class Main {
                 case 1:
 
                     System.out.println(
-                        "\n--- LISTA DE PROJETOS ---"
+                            "\n--- LISTA DE PROJETOS ---"
                     );
 
                     for (Projeto projeto : service.listarProjetos()) {
@@ -77,7 +84,7 @@ public class Main {
                         projeto.exibirDados();
 
                         System.out.println(
-                            "-------------------------"
+                                "-------------------------"
                         );
                     }
 
@@ -86,7 +93,7 @@ public class Main {
                 case 2:
 
                     System.out.print(
-                        "Digite o ID: "
+                            "Digite o ID: "
                     );
 
                     int idBusca = scanner.nextInt();
@@ -94,12 +101,12 @@ public class Main {
                     scanner.nextLine();
 
                     Projeto encontrado =
-                        service.buscarPorId(
-                            idBusca
-                        );
+                            service.buscarPorId(
+                                    idBusca
+                            );
 
                     if (
-                        encontrado != null
+                            encontrado != null
                     ) {
 
                         encontrado.exibirDados();
@@ -107,7 +114,7 @@ public class Main {
                     } else {
 
                         System.out.println(
-                            "Projeto não encontrado."
+                                "Projeto não encontrado."
                         );
                     }
 
@@ -116,7 +123,7 @@ public class Main {
                 case 3:
 
                     System.out.println(
-                        "\n--- CADASTRO ---"
+                            "\n--- CADASTRO ---"
                     );
 
                     System.out.print("ID: ");
@@ -130,52 +137,52 @@ public class Main {
                     String nome = scanner.nextLine();
 
                     System.out.print(
-                        "Descrição: "
+                            "Descrição: "
                     );
 
                     String descricao =
-                        scanner.nextLine();
+                            scanner.nextLine();
 
                     System.out.print(
-                        "Categoria: "
+                            "Categoria: "
                     );
 
                     String categoria =
-                        scanner.nextLine();
+                            scanner.nextLine();
 
                     System.out.print(
-                        "Status: "
+                            "Status: "
                     );
 
                     String status =
-                        scanner.nextLine();
+                            scanner.nextLine();
 
                     Projeto projeto =
-                        new Projeto(
-                            id,
-                            nome,
-                            descricao,
-                            categoria,
-                            status
-                        );
+                            new Projeto(
+                                    nome,
+                                    descricao,
+                                    categoria,
+                                    status
+                            );
 
                     boolean cadastrado =
-                        service.adicionarProjeto(
-                            projeto
-                        );
+                            service.adicionarProjeto(
+                                    projeto
+                            );
 
                     if (cadastrado) {
 
                         service.salvar();
+                        service.carregarProjetos();
 
                         System.out.println(
-                            "Projeto cadastrado."
+                                "Projeto cadastrado."
                         );
 
                     } else {
 
                         System.out.println(
-                            "Não foi possível cadastrar."
+                                "Não foi possível cadastrar."
                         );
                     }
 
@@ -184,27 +191,27 @@ public class Main {
                 case 4:
 
                     System.out.println(
-                        "\n--- ALTERAÇÃO ---"
+                            "\n--- ALTERAÇÃO ---"
                     );
 
                     System.out.print(
-                        "ID do projeto: "
+                            "ID do projeto: "
                     );
 
                     int idAlterar =
-                        scanner.nextInt();
+                            scanner.nextInt();
 
                     scanner.nextLine();
 
                     Projeto existente =
-                        service.buscarPorId(
-                            idAlterar
-                        );
+                            service.buscarPorId(
+                                    idAlterar
+                            );
 
                     if (existente == null) {
 
                         System.out.println(
-                            "Projeto não encontrado."
+                                "Projeto não encontrado."
                         );
 
                         break;
@@ -213,59 +220,58 @@ public class Main {
                     existente.exibirDados();
 
                     System.out.print(
-                        "Novo nome: "
+                            "Novo nome: "
                     );
 
                     String novoNome =
-                        scanner.nextLine();
+                            scanner.nextLine();
 
                     System.out.print(
-                        "Nova descrição: "
+                            "Nova descrição: "
                     );
 
                     String novaDescricao =
-                        scanner.nextLine();
+                            scanner.nextLine();
 
                     System.out.print(
-                        "Nova categoria: "
+                            "Nova categoria: "
                     );
 
                     String novaCategoria =
-                        scanner.nextLine();
+                            scanner.nextLine();
 
                     System.out.print(
-                        "Novo status: "
+                            "Novo status: "
                     );
 
                     String novoStatus =
-                        scanner.nextLine();
+                            scanner.nextLine();
 
                     Projeto atualizado =
-                        new Projeto(
-                            idAlterar,
-                            novoNome,
-                            novaDescricao,
-                            novaCategoria,
-                            novoStatus
-                        );
+                            new Projeto(
+                                    novoNome,
+                                    novaDescricao,
+                                    novaCategoria,
+                                    novoStatus
+                            );
 
                     boolean alterado =
-                        service.alterarProjeto(
-                            atualizado
-                        );
+                            service.alterarProjeto(idAlterar, atualizado
+                            );
 
                     if (alterado) {
 
                         service.salvar();
+                        service.carregarProjetos();
 
                         System.out.println(
-                            "Projeto alterado."
+                                "Projeto alterado."
                         );
 
                     } else {
 
                         System.out.println(
-                            "Erro ao alterar."
+                                "Erro ao alterar."
                         );
                     }
 
@@ -274,29 +280,29 @@ public class Main {
                 case 5:
 
                     System.out.println(
-                        "\n--- EXCLUSÃO ---"
+                            "\n--- EXCLUSÃO ---"
                     );
 
                     System.out.print(
-                        "ID do projeto: "
+                            "ID do projeto: "
                     );
 
                     int idExcluir =
-                        scanner.nextInt();
+                            scanner.nextInt();
 
                     scanner.nextLine();
 
                     Projeto projetoExcluir =
-                        service.buscarPorId(
-                            idExcluir
-                        );
+                            service.buscarPorId(
+                                    idExcluir
+                            );
 
                     if (
-                        projetoExcluir == null
+                            projetoExcluir == null
                     ) {
 
                         System.out.println(
-                            "Projeto não encontrado."
+                                "Projeto não encontrado."
                         );
 
                         break;
@@ -305,34 +311,35 @@ public class Main {
                     projetoExcluir.exibirDados();
 
                     System.out.print(
-                        "Confirma? (S/N): "
+                            "Confirma? (S/N): "
                     );
 
                     String confirmacao =
-                        scanner.nextLine();
+                            scanner.nextLine();
 
                     if (
-                        confirmacao.equalsIgnoreCase("S")
+                            confirmacao.equalsIgnoreCase("S")
                     ) {
 
                         boolean removido =
-                            service.removerPorId(
-                                idExcluir
-                            );
+                                service.removerPorId(
+                                        idExcluir
+                                );
 
                         if (removido) {
 
                             service.salvar();
+                            service.carregarProjetos();
 
                             System.out.println(
-                                "Projeto excluído."
+                                    "Projeto excluído."
                             );
                         }
 
                     } else {
 
                         System.out.println(
-                            "Exclusão cancelada."
+                                "Exclusão cancelada."
                         );
                     }
 
@@ -341,7 +348,7 @@ public class Main {
                 case 0:
 
                     System.out.println(
-                        "Encerrando..."
+                            "Encerrando..."
                     );
 
                     break;
@@ -349,7 +356,7 @@ public class Main {
                 default:
 
                     System.out.println(
-                        "Opção inválida."
+                            "Opção inválida."
                     );
             }
         }

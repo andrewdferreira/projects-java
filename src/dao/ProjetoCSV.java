@@ -13,27 +13,26 @@ public class ProjetoCSV {
 
     public ProjetoCSV() {
 
-        caminho = Path.of("dados/projetos.csv");
-
+        caminho = Path.of("src/dao/projetos.csv");
     }
 
     public void salvar(List<Projeto> projetos)
-        throws Exception {
+            throws Exception {
 
-        List<String> linhas =  new ArrayList<>();
+        List<String> linhas = new ArrayList<>();
 
         linhas.add(
-            "id;nome;descricao;categoria;status"
+                "id;nome;descricao;categoria;status"
         );
 
         for (Projeto projeto : projetos) {
 
             String linha =
-                projeto.getId() + ";" +
-                projeto.getNome() + ";" +
-                projeto.getDescricao() + ";" +
-                projeto.getCategoria() + ";" +
-                projeto.getStatus();
+                    projeto.getId() + ";" +
+                            projeto.getNome() + ";" +
+                            projeto.getDescricao() + ";" +
+                            projeto.getCategoria() + ";" +
+                            projeto.getStatus();
 
             linhas.add(linha);
         }
@@ -42,10 +41,10 @@ public class ProjetoCSV {
     }
 
     public List<Projeto> listar()
-        throws Exception {
+            throws Exception {
 
         List<Projeto> projetos =
-            new ArrayList<>();
+                new ArrayList<>();
 
         if (!Files.exists(caminho)) {
 
@@ -54,14 +53,14 @@ public class ProjetoCSV {
         }
 
         List<String> linhas =
-            Files.readAllLines(caminho);
+                Files.readAllLines(caminho);
 
         for (int i = 1; i < linhas.size(); i++) {
 
             String linha = linhas.get(i);
 
             String[] dados =
-                linha.split(";");
+                    linha.split(";");
 
             int id = Integer.parseInt(dados[0]);
             String nome = dados[1];
@@ -70,13 +69,13 @@ public class ProjetoCSV {
             String status = dados[4];
 
             Projeto projeto =
-                new Projeto(
-                    id,
-                    nome,
-                    descricao,
-                    categoria,
-                    status
-                );
+                    new Projeto(
+                            id,
+                            nome,
+                            descricao,
+                            categoria,
+                            status
+                    );
 
             projetos.add(projeto);
         }

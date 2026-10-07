@@ -7,6 +7,13 @@ public class Projeto {
     private String categoria;
     private String status;
 
+    public Projeto(String nome, String descricao, String categoria, String status) {
+        this.nome = nome;
+        this.descricao = descricao;
+        this.categoria = categoria;
+        this.status = status;
+    }
+
     public Projeto(int id, String nome, String descricao, String categoria, String status) {
         this.id = id;
         this.nome = nome;
@@ -56,7 +63,7 @@ public class Projeto {
     }
 
     public void exibirDados() {
-        System.out.println("ID:" +  id);
+        System.out.println("ID:" + id);
         System.out.println("Nome: " + nome);
         System.out.println("Descrição: " + descricao);
         System.out.println("Categoria: " + categoria);
