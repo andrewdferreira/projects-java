@@ -19,6 +19,8 @@ public class TelaProjetos extends JFrame {
 
     private JButton botaoCadastrar;
     private JButton botaoLimpar;
+    private JButton botaoExcluir;
+    private JButton botaoAlterar;
 
     private ProjetoService service;
     private Projeto projeto;
@@ -59,8 +61,9 @@ public class TelaProjetos extends JFrame {
         comboStatus.addItem("Concluído");
 
         botaoCadastrar = new JButton("Cadastrar");
-
         botaoLimpar = new JButton("Limpar");
+        botaoAlterar = new JButton("Alterar");
+        botaoExcluir = new JButton("Excluir");
 
         modelo = new DefaultTableModel();
 
@@ -87,6 +90,8 @@ public class TelaProjetos extends JFrame {
 
         painelFormulario.add(botaoCadastrar);
         painelFormulario.add(botaoLimpar);
+        painelFormulario.add(botaoAlterar);
+        painelFormulario.add(botaoExcluir);
 
         setLayout(new BoxLayout(
                 getContentPane(),
@@ -103,6 +108,10 @@ public class TelaProjetos extends JFrame {
         botaoLimpar.addActionListener(e -> limparFormulario());
 
         botaoCadastrar.addActionListener(e -> cadastrar());
+
+        //botaoAlterar.addActionListener(e -> );
+
+        botaoExcluir.addActionListener(e -> excluir());
     }
 
     private void limparFormulario() {
@@ -166,6 +175,43 @@ public class TelaProjetos extends JFrame {
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this,
                     "Erro ao salvar o projeto: " + e.getMessage(),
+                    "Erro",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void excluir() {
+        String input = JOptionPane.showInputDialog("Digite o ID do projeto que deseja excluir:");
+        int idExcluir = Integer.parseInt(input);
+        Projeto projeto = service.buscarPorId(idExcluir);
+
+        if (projeto == null) {
+            JOptionPane.showMessageDialog(null,
+                    "ID não encotrado!", "Erro",
+                    JOptionPane.ERROR_MESSAGE
+            );
+
+            return;
+        }
+
+        JOptionPane.showMessageDialog(null,
+                "Projeto " + projeto.getNome() + " excluído",
+                "Exclusão",
+                JOptionPane.WARNING_MESSAGE);
+        service.removerPorId(idExcluir);
+
+        try {
+            service.salvar();
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Projeto excluído com sucesso!"
+            );
+            carregarTabela();
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this,
+                    "Erro ao exclir o projeto: " + e.getMessage(),
                     "Erro",
                     JOptionPane.ERROR_MESSAGE);
         }
