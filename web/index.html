@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Projetos</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header class="page-header">
+        <div class="header-content">
+            <p class="eyebrow">GESTÃO DE PORTFÓLIO</p>
+            <h1>Sistema de Projetos</h1>
+        </div>
+    </header>
+    <main>
+        <section id="gestor-de-projetos" class="form-panel">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">CADASTRO</p>
+                    <h2>Novo projeto</h2>
+                </div>
+            </div>
+            <form>
+                <div class="field-grid">
+                    <label class="field">
+                        <span>Nome do projeto</span>
+                        <input type="text" name="nome" placeholder="Ex.: Plataforma de vendas" required>
+                    </label>
+                    <label class="field">
+                        <span>Descrição</span>
+                        <input type="text" name="descricao" placeholder="Resumo do projeto" required>
+                    </label>
+                    <label class="field">
+                        <span>Categoria</span>
+                        <select id="categoria" name="categoria" required>
+                            <option value="" disabled selected>Selecione uma categoria</option>
+                            <option value="web">Web</option>
+                            <option value="mobile">Mobile</option>
+                            <option value="desktop">Software</option>
+                            <option value="outros">Outro</option>
+                        </select>
+                    </label>
+                    <label class="field">
+                        <span>Status</span>
+                        <select id="status" name="status" required>
+                            <option value="" disabled selected>Selecione um status</option>
+                            <option value="concluido">Concluído</option>
+                            <option value="em-andamento">Em Andamento</option>
+                            <option value="Planejado">Planejado</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="form-actions">
+                    <button class="button button-quiet" type="reset">Limpar formulário</button>
+                    <div class="button-group">
+                        <button class="button button-primary" type="submit">Cadastrar projeto</button>
+                        <button class="button button-secondary" type="button">Alterar projeto</button>
+                        <button class="button button-danger" type="button">Excluir projeto</button>
+                    </div>
+                </div>
+            </form>
+        </section>
+        <section class="projects-section">
+            <div class="section-heading table-heading">
+                <div>
+                    <p class="eyebrow">VISÃO GERAL</p>
+                    <h2>Projetos cadastrados</h2>
+                </div>
+            </div>
+            <div class="table-frame">
+              <div class="table-scroll">
+                <table class="tabela-projetos">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome do Projeto</th>
+                        <th>Descrição</th>
+                        <th>Categoria</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="projetos-tbody">
+                    <!-- Os projetos cadastrados serão exibidos aqui -->
+                </tbody>
+                </table>
+              </div>
+            </div>
+        </section>
+    </main>
+</body>
+</html>
