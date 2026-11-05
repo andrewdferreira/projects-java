@@ -6,6 +6,8 @@ import javax.swing.table.DefaultTableModel;
 import service.ProjetoService;
 import model.Projeto;
 
+import java.io.IOException;
+
 public class TelaProjetos extends JFrame {
 
     private JTextField campoNome;
@@ -109,7 +111,7 @@ public class TelaProjetos extends JFrame {
 
         botaoCadastrar.addActionListener(e -> cadastrar());
 
-        //botaoAlterar.addActionListener(e -> );
+        botaoAlterar.addActionListener(e -> alterarSelecionadoTabela());
 
         botaoExcluir.addActionListener(e -> excluir());
     }
@@ -178,6 +180,79 @@ public class TelaProjetos extends JFrame {
                     "Erro",
                     JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    private void alterarSelecionadoTabela() {
+        int linha = tabela.getSelectedRow();
+
+        if(linha == -1) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Selecione um projeto da tabela."
+            );
+
+            return;
+        }
+
+        String nome = campoNome.getText();
+        if (nome.isBlank()) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Informe o nome."
+            );
+
+            return;
+        }
+
+        String descricao = campoDescricao.getText();
+        if (descricao.isBlank()) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Informe a descrição."
+            );
+
+            return;
+        }
+
+        String categoria = comboCategoria.getSelectedItem().toString();
+        String status = comboStatus.getSelectedItem().toString();
+
+        int id = (Integer) tabela.getValueAt(linha,0);
+
+        Projeto projeto = new Projeto(
+                nome,
+                descricao,
+                categoria,
+                status
+        );
+
+        boolean alterou = service.alterarProjeto(id, projeto);
+
+        if(!alterou) {
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Não foi possível alterar o projeto."
+            );
+
+            return;
+        }
+
+        try {
+            service.salvar();
+        } catch (Exception a) {
+            JOptionPane.showMessageDialog(this,
+                    "Erro ao alterar o projeto: " + a.getMessage(),
+                    "Erro",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+
+        JOptionPane.showMessageDialog(
+                this,
+                "Projeto " + nome + " alterado com sucesso."
+        );
+
+        limparFormulario();
+        carregarTabela();
     }
 
     private void excluir() {
