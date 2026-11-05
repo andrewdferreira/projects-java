@@ -51,6 +51,25 @@ public class Api {
                 ctx.json(projeto);
             });
 
+            config.routes.get("api/categorias", ctx -> {
+                String[] categorias = new String[4];
+                categorias[0] = "Web";
+                categorias[1] = "Software";
+                categorias[2] = "Mobile";
+                categorias[3] = "Outros";
+
+                ctx.json(categorias);
+            });
+
+            config.routes.get("api/status", ctx -> {
+               String[] status = new String[3];
+               status[0] = "Em planejamento";
+               status[1] = "Em desenvolvimento";
+               status[2] = "Concluído";
+
+               ctx.json(status);
+            });
+
             config.routes.post("api/projetos", ctx -> {
                 try {
                     service.carregarProjetos();
