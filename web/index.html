@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Projetos</title>
     <link rel="stylesheet" href="css/style.css">
+    <script src="js/script.js"></script>
 </head>
 <body>
     <header class="page-header">
@@ -21,15 +22,15 @@
                     <h2>Novo projeto</h2>
                 </div>
             </div>
-            <form id="formCadastro">
+            <form id="formCadastro" onsubmit="Cadastrar(event)">
                 <div class="field-grid">
                     <label class="field">
                         <span>Nome do projeto</span>
-                        <input type="text" name="nome" placeholder="Ex.: Plataforma de vendas" required>
+                        <input type="text" id="nome" name="nome" placeholder="Ex.: Plataforma de vendas" required>
                     </label>
                     <label class="field">
                         <span>Descrição</span>
-                        <input type="text" name="descricao" placeholder="Resumo do projeto" required>
+                        <input type="text" id="descricao" name="descricao" placeholder="Resumo do projeto" required>
                     </label>
                     <label class="field">
                         <span>Categoria</span>
@@ -88,7 +89,5 @@
             </div>
         </section>
     </main>
-
-    <script src="js/script.js"></script>
 </body>
 </html>

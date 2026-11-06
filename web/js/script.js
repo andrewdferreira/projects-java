@@ -1,6 +1,8 @@
 const url = "http://localhost:7070";
 
-async function Cadastrar() {
+async function Cadastrar(event) {
+    event.preventDefault();
+    
     const nome = document.getElementById("nome").value;
     const descricao = document.getElementById("descricao").value;
     const categoria = document.getElementById("categoria").value;
@@ -9,7 +11,7 @@ async function Cadastrar() {
         nome,
         descricao,
         categoria,
-        status
+        status,
     };
 
     console.log(enviar);
@@ -37,7 +39,8 @@ async function Deletar(id) {
 async function Exibir() {
     const resposta = await fetch(`${url}/api/projetos`);
     const projetos = await resposta.json();
-    let corpo = document.getElementById("projetos-body");
+    console.log(projetos);
+    let corpo = document.getElementById("projetos-tbody");
 
     corpo.replaceChildren();
 
@@ -45,10 +48,11 @@ async function Exibir() {
         corpo.insertAdjacentHTML(
             "beforeend",
             `<tr>
-                <td>${projeto.nome}</td>
-                <td>${projeto.descricao}</td>
-                <td>${projeto.categoria}</td>
-                <td>${projeto.status}</td>
+                <th>${projeto.id}</th>
+                <th>${projeto.nome}</th>
+                <th>${projeto.descricao}</th>
+                <th>${projeto.categoria}</th>
+                <th>${projeto.status}</th>
             </tr>`
         );
     }

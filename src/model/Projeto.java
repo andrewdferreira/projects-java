@@ -7,6 +7,9 @@ public class Projeto {
     private String categoria;
     private String status;
 
+    public Projeto() {
+    }
+
     public Projeto(String nome, String descricao, String categoria, String status) {
         this.nome = nome;
         this.descricao = descricao;

@@ -5,6 +5,7 @@ import model.Projeto;
 import api.ErroResponse;
 
 import io.javalin.Javalin;
+import io.javalin.plugin.bundled.CorsPluginConfig;
 
 import java.io.IOException;
 import java.util.List;
@@ -17,7 +18,15 @@ public class Api {
         } catch (Exception e) {
             System.err.println(e);
         }
+
         var app = Javalin.create(config -> {
+
+            config.bundledPlugins.enableCors(cors -> {
+                cors.addRule(it -> {
+                    it.anyHost();
+                // Libera para qualquer origem em desenvolvimento
+                });
+            });
 
             config.routes.get("/", ctx -> {
                 ctx.result("API Sistema de Projetos");
