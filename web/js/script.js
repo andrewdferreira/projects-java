@@ -28,10 +28,15 @@ async function Cadastrar(event) {
     Exibir();
 }
 
-async function Deletar(id) {
-    await fetch(`${url}/api/projetos/${id}`, {
-        method: "DELETE"
-    });
+async function DeletarSelecionado() {
+    const checkboxes = document.querySelectorAll('input[name^="projeto-${projeto.id}"]:checked');
+    const ids = Array.from(checkboxes).map(checkbox => checkbox.id.split('-')[2]);
+
+    for (const id of ids) {
+        await fetch(`${url}/api/projetos/${id}`, {
+            method: "DELETE"
+        });
+    }
 
     Exibir();
 }
@@ -41,6 +46,7 @@ async function Exibir() {
     const projetos = await resposta.json();
     console.log(projetos);
     let corpo = document.getElementById("projetos-tbody");
+    let selecionar = document.getElementById("projetos-select");
 
     corpo.replaceChildren();
 
@@ -53,6 +59,10 @@ async function Exibir() {
                 <th>${projeto.descricao}</th>
                 <th>${projeto.categoria}</th>
                 <th>${projeto.status}</th>
+                <th>
+                    <input type="checkbox" id="projeto-${projeto.id}" name="projeto-${projeto.id}" class="projetos-select">
+                    <label for="projeto-${projeto.id}"></label>
+                </th>
             </tr>`
         );
     }

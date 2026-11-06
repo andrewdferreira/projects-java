@@ -298,3 +298,64 @@ form {
         width: 100%;
     }
 }
+
+.projetos-select {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.projetos-select + label {
+  position: relative;
+  padding-left: 30px;
+  cursor: pointer;
+  user-select: none;
+  font-family: sans-serif;
+}
+
+.projetos-select:checked {
+    color:#176b51;
+    background-color: var(--green);
+    border-color: var(--green-dark);
+}
+
+.projetos-select + label::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #777;
+  border-radius: 4px;
+  background: #fff;
+  transition: all 0.2s ease;
+}
+
+.projetos-select + label::after {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 3px;
+  width: 6px;
+  height: 11px;
+  border: solid white;
+  border-width: 0 3px 3px 0;
+  transform: rotate(45deg) scale(0);
+  transition: all 0.2s ease;
+}
+
+.projetos-select:focus-visible + label::before {
+  outline: 2px solid #00b336;
+  outline-offset: 2px;
+}
+
+.projetos-select:checked + label::before {
+  background: #129155;
+  border-color: #023629;
+}
+
+.projetos-select:checked + label::after {
+  transform: rotate(45deg) scale(1);
+}
