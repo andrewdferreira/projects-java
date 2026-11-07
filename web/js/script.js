@@ -29,8 +29,23 @@ async function Cadastrar(event) {
 }
 
 async function DeletarSelecionado() {
-    const checkboxes = document.querySelectorAll('input[name^="projeto-${projeto.id}"]:checked');
-    const ids = Array.from(checkboxes).map(checkbox => checkbox.id.split('-')[2]);
+    const checkboxes = document.querySelectorAll(`.projetos-select:checked`);
+    const ids = Array.from(checkboxes).map(checkbox => checkbox.id.split('-')[1]);
+
+    let feedback = document.getElementById("feedback");
+    feedback.textContent = "";
+    
+    if (ids.length === 0) {
+        feedback.textContent = "Nenhum projeto selecionado para exclusão.";
+        return;
+    }
+
+    let confirmar = confirm("Deseja realmente deletar os projetos selecionados?");
+
+    if (!confirmar) {
+        feedback.textContent = "Exclusão cancelada.";
+        return;
+    }
 
     for (const id of ids) {
         await fetch(`${url}/api/projetos/${id}`, {
@@ -41,10 +56,14 @@ async function DeletarSelecionado() {
     Exibir();
 }
 
+async function AlterarSelecionado() {
+    const checkboxes = document.querySelectorAll(`.projetos-select:checked`);
+    const ids = Array.from(checkboxes).map(checkbox => checkbox.id.split('-')[1]);
+}
+
 async function Exibir() {
     const resposta = await fetch(`${url}/api/projetos`);
     const projetos = await resposta.json();
-    console.log(projetos);
     let corpo = document.getElementById("projetos-tbody");
     let selecionar = document.getElementById("projetos-select");
 
