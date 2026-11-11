@@ -56,9 +56,102 @@ async function DeletarSelecionado() {
     Exibir();
 }
 
-async function AlterarSelecionado() {
+async function CarregarSelecionado(id) {
+    const resposta = await fetch(`${url}/api/projetos`);
+    const projetos = await resposta.json();
+    let feedback = document.getElementById("feedback");
+
+    feedback.textContent = "";
+
     const checkboxes = document.querySelectorAll(`.projetos-select:checked`);
     const ids = Array.from(checkboxes).map(checkbox => checkbox.id.split('-')[1]);
+
+    if (ids.length === 0) {
+        feedback.textContent = "Nenhum projeto selecionado para edição.";
+        return;
+    }
+
+    if (ids.length > 1) {
+        feedback.textContent = "Selecione apenas um projeto para edição.";
+        return;
+    }
+
+    let elementoPai = document.getElementById("popup");
+    elementoPai.innerHTML = `<section id="gestor-de-projetos" class="form-panel">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">EDIÇÃO</p>
+                    <h2>Editar projeto</h2>
+                </div>
+            </div>
+            <form id="formEditar">
+                <div class="field-grid">
+                    <label class="field">
+                        <span>Nome do projeto</span>
+                        <input type="text" id="nomeEditar" name="nome" placeholder="${projeto.nome}" required>
+                    </label>
+                    <label class="field">
+                        <span>Descrição</span>
+                        <input type="text" id="descricaoEditar" name="descricao" placeholder="${projeto.descricao}" required>
+                    </label>
+                    <label class="field">
+                        <span>Categoria</span>
+                        <select id="categoriaEditar" name="categoria" required>
+                            <option value="web" ${projeto.categoria === "web" ? "selected" : ""}>Web</option>
+                            <option value="mobile" ${projeto.categoria === "mobile" ? "selected" : ""}>Mobile</option>
+                            <option value="desktop" ${projeto.categoria === "desktop" ? "selected" : ""}>Software</option>
+                            <option value="outros" ${projeto.categoria === "outros" ? "selected" : ""}>Outro</option>
+                        </select>
+                    </label>
+                    <label class="field">
+                        <span>Status</span>
+                        <select id="statusEditar" name="status" required>
+                            <option value="concluido" ${projeto.status === "concluido" ? "selected" : ""}>Concluído</option>
+                            <option value="em-andamento" ${projeto.status === "em-andamento" ? "selected" : ""}>Em Andamento</option>
+                            <option value="Planejado" ${projeto.status === "Planejado" ? "selected" : ""}>Planejado</option>
+                        </select>
+                    </label>
+                </div>
+                <div class="form-actions">
+                    <button class="button button-quiet" type="reset">Limpar formulário</button>
+                    <div class="button-group">
+                        <button class="button button-primary" type="button" onclick="EditarSelecionado(${projeto.id})">Editar projeto</button>
+                        <button class="button button-danger" type="button" onclick="CancelarEdicao()">Cancelar </button>
+                    </div>
+                </div>
+            </form>
+        </section>`;
+
+        let meuModal = new bootstrap.Modal(document.getElementById("modalEditar"));
+        meuModal.show();
+}
+
+async function EditarSelecionado(id) {
+    const nome = document.getElementById("nomeEditar").value = projeto.nome;
+    const descricao = document.getElementById("descricaoEditar").value = projeto.descricao;
+    const categoria = document.getElementById("categoriaEditar").value = projeto.categoria;
+    const status = document.getElementById("statusEditar").value = projeto.status;
+
+    const enviar = {
+    nome,
+    descricao,
+    categoria,
+    status
+  };
+  console.log(enviar);
+
+  await fetch(`${url}/api/projeto/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(enviar),
+  });
+
+  Exibir();
+
+  let modal = bootstrap.Modal.getInstance(document.getElementById("modalEditar"))
+  modal.hide();
 }
 
 async function Exibir() {

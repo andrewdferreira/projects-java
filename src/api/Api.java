@@ -24,7 +24,6 @@ public class Api {
             config.bundledPlugins.enableCors(cors -> {
                 cors.addRule(it -> {
                     it.anyHost();
-                // Libera para qualquer origem em desenvolvimento
                 });
             });
 
