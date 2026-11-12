@@ -56,7 +56,7 @@ async function DeletarSelecionado() {
     Exibir();
 }
 
-async function CarregarSelecionado(id) {
+async function CarregarSelecionado() {
     const resposta = await fetch(`${url}/api/projetos`);
     const projetos = await resposta.json();
     let feedback = document.getElementById("feedback");
@@ -76,6 +76,14 @@ async function CarregarSelecionado(id) {
         return;
     }
 
+    const idSelecionado = ids[0];
+    const projeto = projetos.find(p => p.id == idSelecionado);
+
+    if (!projeto) {
+        feedback.textContent = "Projeto não encontrado.";
+        return;
+    }
+
     let elementoPai = document.getElementById("popup");
     elementoPai.innerHTML = `<section id="gestor-de-projetos" class="form-panel">
             <div class="section-heading">
@@ -88,11 +96,11 @@ async function CarregarSelecionado(id) {
                 <div class="field-grid">
                     <label class="field">
                         <span>Nome do projeto</span>
-                        <input type="text" id="nomeEditar" name="nome" placeholder="${projeto.nome}" required>
+                        <input type="text" id="nomeEditar" name="nome" value="${projeto.nome}" required>
                     </label>
                     <label class="field">
                         <span>Descrição</span>
-                        <input type="text" id="descricaoEditar" name="descricao" placeholder="${projeto.descricao}" required>
+                        <input type="text" id="descricaoEditar" name="descricao" value="${projeto.descricao}" required>
                     </label>
                     <label class="field">
                         <span>Categoria</span>
@@ -115,50 +123,52 @@ async function CarregarSelecionado(id) {
                 <div class="form-actions">
                     <button class="button button-quiet" type="reset">Limpar formulário</button>
                     <div class="button-group">
-                        <button class="button button-primary" type="button" onclick="EditarSelecionado(${projeto.id})">Editar projeto</button>
-                        <button class="button button-danger" type="button" onclick="CancelarEdicao()">Cancelar </button>
+                        <button class="button button-primary" type="button" onclick="EditarSelecionado(${projeto.id})">Salvar Alterações</button>
+                        <button class="button button-danger" type="button" onclick="FecharModal()">Cancelar</button>
                     </div>
                 </div>
             </form>
         </section>`;
 
-        let meuModal = new bootstrap.Modal(document.getElementById("modalEditar"));
-        meuModal.show();
+    const meuModal = document.getElementById("modalEditar");
+    meuModal.style.display = "flex";
 }
 
 async function EditarSelecionado(id) {
-    const nome = document.getElementById("nomeEditar").value = projeto.nome;
-    const descricao = document.getElementById("descricaoEditar").value = projeto.descricao;
-    const categoria = document.getElementById("categoriaEditar").value = projeto.categoria;
-    const status = document.getElementById("statusEditar").value = projeto.status;
+    const nome = document.getElementById("nomeEditar").value;
+    const descricao = document.getElementById("descricaoEditar").value;
+    const categoria = document.getElementById("categoriaEditar").value;
+    const status = document.getElementById("statusEditar").value;
 
     const enviar = {
-    nome,
-    descricao,
-    categoria,
-    status
-  };
-  console.log(enviar);
+        nome,
+        descricao,
+        categoria,
+        status
+    };
+    console.log(enviar);
 
-  await fetch(`${url}/api/projeto/${id}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(enviar),
-  });
+    await fetch(`${url}/api/projetos/${id}`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(enviar),
+    });
 
-  Exibir();
+    Exibir();
+    FecharModal();
+}
 
-  let modal = bootstrap.Modal.getInstance(document.getElementById("modalEditar"))
-  modal.hide();
+function FecharModal() {
+    const meuModal = document.getElementById("modalEditar");
+    meuModal.style.display = "none";
 }
 
 async function Exibir() {
     const resposta = await fetch(`${url}/api/projetos`);
     const projetos = await resposta.json();
     let corpo = document.getElementById("projetos-tbody");
-    let selecionar = document.getElementById("projetos-select");
 
     corpo.replaceChildren();
 
