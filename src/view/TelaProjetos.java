@@ -6,16 +6,15 @@ import service.ProjetoService;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.table.DefaultTableModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class TelaProjetos extends JFrame {
 
-    // Cores extraídas diretamente do seu CSS (:root)
     private static final Color COLOR_INK = Color.decode("#18342b");
     private static final Color COLOR_CANVAS = Color.decode("#f2f6f2");
     private static final Color COLOR_SURFACE = Color.decode("#ffffff");
@@ -31,7 +30,6 @@ public class TelaProjetos extends JFrame {
     private JComboBox<String> comboCategoria;
     private JComboBox<String> comboStatus;
 
-    // Novos componentes de Pesquisa e Filtro
     private JTextField campoBusca;
     private JComboBox<String> comboFiltroCategoria;
     private JComboBox<String> comboFiltroStatus;
@@ -48,13 +46,12 @@ public class TelaProjetos extends JFrame {
     private ProjetoService service;
 
     public TelaProjetos() {
-        // Inicializa o tema FlatLaf e aplica as propriedades globais idênticas ao CSS
         inicializarTemaFlatLaf();
 
         service = new ProjetoService();
 
         setTitle("Sistema de Projetos");
-        setSize(940, 720);
+        setSize(980, 740);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -67,10 +64,11 @@ public class TelaProjetos extends JFrame {
         try {
             UIManager.setLookAndFeel(new FlatLightLaf());
             
-            // Customizações globais para respeitar o border-radius e cores do seu projeto
-            UIManager.put("Button.arc", 6);
-            UIManager.put("Component.arc", 6);
-            UIManager.put("TextComponent.arc", 6);
+            // Aumentando o raio (arc) para deixar botões, inputs e selects mais arredondados
+            UIManager.put("Button.arc", 12);
+            UIManager.put("Component.arc", 12);
+            UIManager.put("TextComponent.arc", 12);
+            
             UIManager.put("Panel.background", COLOR_CANVAS);
             UIManager.put("Component.focusColor", COLOR_GREEN);
             UIManager.put("Component.borderColor", Color.decode("#cbd8cf"));
@@ -83,17 +81,17 @@ public class TelaProjetos extends JFrame {
     }
 
     private void criarComponentes() {
+        // Painel principal sem margens externas para colar nas bordas da janela
         JPanel painelPrincipal = new JPanel(new BorderLayout());
         painelPrincipal.setBackground(COLOR_CANVAS);
-        painelPrincipal.setBorder(new EmptyBorder(24, 32, 32, 32));
 
-        // 1. HEADER DA PÁGINA (.page-header)
+        // 1. HEADER DA PÁGINA (Ocupa toda a largura superior)
         JPanel painelHeader = new JPanel();
         painelHeader.setLayout(new BoxLayout(painelHeader, BoxLayout.Y_AXIS));
         painelHeader.setBackground(COLOR_GREEN_DARK);
         painelHeader.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(0, 0, 4, 0, Color.decode("#b9d85c")),
-                new EmptyBorder(24, 28, 26, 28)
+                new EmptyBorder(24, 32, 26, 32)
         ));
 
         JLabel lblEyebrowHeader = new JLabel("GESTÃO DE PORTFÓLIO");
@@ -108,7 +106,13 @@ public class TelaProjetos extends JFrame {
         painelHeader.add(Box.createVerticalStrut(4));
         painelHeader.add(lblTituloHeader);
 
-        // 2. PAINEL DO FORMULÁRIO DE CADASTRO (.form-panel)
+        // Painel de conteúdo interno com um respiro elegante nas laterais
+        JPanel painelConteudo = new JPanel();
+        painelConteudo.setLayout(new BoxLayout(painelConteudo, BoxLayout.Y_AXIS));
+        painelConteudo.setBackground(COLOR_CANVAS);
+        painelConteudo.setBorder(new EmptyBorder(24, 28, 28, 28));
+
+        // 2. PAINEL DO FORMULÁRIO DE CADASTRO
         JPanel painelFormularioCard = new JPanel(new BorderLayout());
         painelFormularioCard.setBackground(COLOR_SURFACE);
         painelFormularioCard.setBorder(BorderFactory.createCompoundBorder(
@@ -207,7 +211,7 @@ public class TelaProjetos extends JFrame {
         tabelaTituloBox.add(lblTituloTabela);
         painelTabelaHeading.add(tabelaTituloBox, BorderLayout.WEST);
 
-        // --- PAINEL DE BUSCA E FILTROS ---
+        // Painel de Filtros e Busca
         JPanel painelFiltros = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         painelFiltros.setBackground(COLOR_CANVAS);
 
@@ -266,14 +270,11 @@ public class TelaProjetos extends JFrame {
         painelTabelaSecao.add(painelTabelaHeading, BorderLayout.NORTH);
         painelTabelaSecao.add(tableFrame, BorderLayout.CENTER);
 
-        JPanel painelConteudoCentral = new JPanel();
-        painelConteudoCentral.setLayout(new BoxLayout(painelConteudoCentral, BoxLayout.Y_AXIS));
-        painelConteudoCentral.setBackground(COLOR_CANVAS);
-        painelConteudoCentral.add(painelFormularioCard);
-        painelConteudoCentral.add(painelTabelaSecao);
+        painelConteudo.add(painelFormularioCard);
+        painelConteudo.add(painelTabelaSecao);
 
         painelPrincipal.add(painelHeader, BorderLayout.NORTH);
-        painelPrincipal.add(new JScrollPane(painelConteudoCentral), BorderLayout.CENTER);
+        painelPrincipal.add(new JScrollPane(painelConteudo), BorderLayout.CENTER);
 
         add(painelPrincipal);
     }
@@ -352,7 +353,6 @@ public class TelaProjetos extends JFrame {
         botaoAlterar.addActionListener(e -> alterarSelecionadoTabela());
         botaoExcluir.addActionListener(e -> excluir());
 
-        // Eventos de Busca e Filtro em tempo real
         campoBusca.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent e) { aplicarFiltros(); }
             public void removeUpdate(DocumentEvent e) { aplicarFiltros(); }
@@ -368,7 +368,6 @@ public class TelaProjetos extends JFrame {
             comboFiltroStatus.setSelectedIndex(0);
         });
 
-        // Selecionar linha da tabela para preencher os campos do formulário
         tabela.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting() && tabela.getSelectedRow() != -1) {
                 int linha = tabela.getSelectedRow();
