@@ -3,6 +3,7 @@ package view;
 import com.formdev.flatlaf.FlatLightLaf;
 import model.Projeto;
 import service.ProjetoService;
+import util.LogConfig;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -113,8 +114,8 @@ public class TelaProjetos extends JFrame {
         painelTitulos.add(Box.createVerticalStrut(4));
         painelTitulos.add(lblTituloHeader);
 
-        // Botão para abrir o Dashboard de Gráficos de Pizza
-        botaoGraficos = new JButton("📊 Gráficos de Pizza");
+        // Botão para abrir o Dashboard de Gráficos (D1, D2, D3)
+        botaoGraficos = new JButton("📊 Ver Dashboards");
         botaoGraficos.setBackground(COLOR_GREEN);
         botaoGraficos.setForeground(Color.WHITE);
         botaoGraficos.setFont(new Font("DM Sans", Font.BOLD, 13));
@@ -176,8 +177,8 @@ public class TelaProjetos extends JFrame {
         campoNome = criarCampoTexto();
         campoDescricao = criarCampoTexto();
 
-        comboCategoria = new JComboBox<>(new String[]{"Web", "Software", "Mobile", "Outros"});
-        comboStatus = new JComboBox<>(new String[]{"Planejado", "Em andamento", "Concluído"});
+        comboCategoria = new JComboBox<>(new String[]{"Web", "Software", "Mobile", "Desktop", "Outros"});
+        comboStatus = new JComboBox<>(new String[]{"Planejado", "Em andamento", "Concluído", "Cancelado"});
 
         gridCampos.add(criarBlocoCampo("Nome do projeto", campoNome));
         gridCampos.add(criarBlocoCampo("Descrição", campoDescricao));
@@ -245,8 +246,8 @@ public class TelaProjetos extends JFrame {
         campoBusca.putClientProperty("JTextField.placeholderText", "🔍 Pesquisar projeto...");
         campoBusca.setFont(new Font("DM Sans", Font.PLAIN, 13));
 
-        comboFiltroCategoria = new JComboBox<>(new String[]{"Todas Categorias", "Web", "Software", "Mobile", "Outros"});
-        comboFiltroStatus = new JComboBox<>(new String[]{"Todos Status", "Planejado", "Em andamento", "Concluído"});
+        comboFiltroCategoria = new JComboBox<>(new String[]{"Todas Categorias", "Web", "Software", "Mobile", "Desktop", "Outros"});
+        comboFiltroStatus = new JComboBox<>(new String[]{"Todos Status", "Planejado", "Em andamento", "Concluído", "Cancelado"});
         
         botaoLimparFiltros = criarBotaoSecundario("Limpar Filtros");
 
@@ -458,7 +459,8 @@ public class TelaProjetos extends JFrame {
         String cp = catProjeto.trim().toLowerCase();
         String cf = catFiltro.trim().toLowerCase();
         if (cp.equals(cf)) return true;
-        if (cf.contains("soft") && (cp.contains("soft") || cp.contains("desk"))) return true;
+        if (cf.contains("desk") && cp.contains("desk")) return true;
+        if (cf.contains("soft") && cp.contains("soft")) return true;
         if (cf.contains("web") && cp.contains("web")) return true;
         if (cf.contains("mobi") && cp.contains("mobi")) return true;
         if (cf.contains("outro") && cp.contains("outro")) return true;
@@ -472,7 +474,8 @@ public class TelaProjetos extends JFrame {
         String sf = statusFiltro.trim().toLowerCase();
         if (sp.equals(sf)) return true;
         if (sf.contains("conclu") && sp.contains("conclu")) return true;
-        if (sf.contains("andamento") && (sp.contains("andamento") || sp.contains("desenvolvimento"))) return true;
+        if (sf.contains("cancela") && sp.contains("cancela")) return true;
+        if ((sf.contains("andamento") || sf.contains("desenv")) && (sp.contains("andamento") || sp.contains("desenv") || sp.contains("ativo"))) return true;
         if (sf.contains("planeja") && sp.contains("planeja")) return true;
         return false;
     }
@@ -495,6 +498,7 @@ public class TelaProjetos extends JFrame {
         String status = comboStatus.getSelectedItem().toString();
 
         if (nome.isBlank()) {
+            LogConfig.error("CAMPO_INVALIDO", "Tentativa de cadastro com nome em branco na tela Swing", null);
             JOptionPane.showMessageDialog(this, "Informe o nome.");
             return;
         }
@@ -504,10 +508,14 @@ public class TelaProjetos extends JFrame {
 
         try {
             service.salvar();
+            LogConfig.audit("CRIADO", projeto.getId(),
+                    String.format("Nome='%s', Categoria='%s', Status='%s' (via GUI Swing)",
+                            projeto.getNome(), projeto.getCategoria(), projeto.getStatus()));
             JOptionPane.showMessageDialog(this, "Projeto cadastrado com sucesso!");
             limparFormulario();
             atualizarTelaGraficosSeAberta();
         } catch (Exception e) {
+            LogConfig.error("PERSISTENCIA", "Erro ao salvar novo projeto na tela Swing: " + e.getMessage(), e);
             JOptionPane.showMessageDialog(this, "Erro ao salvar: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
         }
     }
@@ -526,6 +534,7 @@ public class TelaProjetos extends JFrame {
         String status = comboStatus.getSelectedItem().toString();
 
         if (nome.isBlank() || descricao.isBlank()) {
+            LogConfig.error("CAMPO_INVALIDO", "Preenchimento incompleto ao alterar projeto via tela Swing", null);
             JOptionPane.showMessageDialog(this, "Preencha o nome e a descrição.");
             return;
         }
@@ -535,16 +544,21 @@ public class TelaProjetos extends JFrame {
         boolean alterou = service.alterarProjeto(id, projeto);
 
         if (!alterou) {
+            LogConfig.error("CAMPO_INVALIDO", "Projeto ID " + id + " não encontrado para alteração na tela Swing", null);
             JOptionPane.showMessageDialog(this, "Não foi possível alterar o projeto.");
             return;
         }
 
         try {
             service.salvar();
+            LogConfig.audit("ALTERADO", id,
+                    String.format("Nome='%s', Categoria='%s', Status='%s' (via GUI Swing)",
+                            projeto.getNome(), projeto.getCategoria(), projeto.getStatus()));
             JOptionPane.showMessageDialog(this, "Projeto alterado com sucesso.");
             limparFormulario();
             atualizarTelaGraficosSeAberta();
         } catch (Exception a) {
+            LogConfig.error("PERSISTENCIA", "Erro ao alterar projeto ID " + id + " via tela Swing: " + a.getMessage(), a);
             JOptionPane.showMessageDialog(this, "Erro ao alterar: " + a.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
         }
     }
@@ -561,6 +575,7 @@ public class TelaProjetos extends JFrame {
             try {
                 idExcluir = Integer.parseInt(input);
             } catch (NumberFormatException e) {
+                LogConfig.error("CAMPO_INVALIDO", "ID inválido informado para exclusão na tela Swing: " + input, null);
                 JOptionPane.showMessageDialog(this, "ID inválido!", "Erro", JOptionPane.ERROR_MESSAGE);
                 return;
             }
@@ -568,6 +583,7 @@ public class TelaProjetos extends JFrame {
 
         Projeto projeto = service.buscarPorId(idExcluir);
         if (projeto == null) {
+            LogConfig.error("CAMPO_INVALIDO", "Projeto ID " + idExcluir + " não localizado para exclusão na tela Swing", null);
             JOptionPane.showMessageDialog(this, "ID não encontrado!", "Erro", JOptionPane.ERROR_MESSAGE);
             return;
         }
@@ -581,10 +597,12 @@ public class TelaProjetos extends JFrame {
 
             try {
                 service.salvar();
+                LogConfig.audit("EXCLUIDO", idExcluir, "Nome='" + projeto.getNome() + "' (via GUI Swing)");
                 JOptionPane.showMessageDialog(this, "Projeto excluído com sucesso!");
                 limparFormulario();
                 atualizarTelaGraficosSeAberta();
             } catch (Exception e) {
+                LogConfig.error("PERSISTENCIA", "Erro ao excluir projeto ID " + idExcluir + " via tela Swing: " + e.getMessage(), e);
                 JOptionPane.showMessageDialog(this, "Erro ao excluir: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
             }
         }

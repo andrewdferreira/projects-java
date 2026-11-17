@@ -5,6 +5,7 @@ import java.util.List;
 
 import model.Projeto;
 import dao.ProjetoCSV;
+import util.LogConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,6 +23,7 @@ public class ProjetoService {
 
     public boolean adicionarProjeto(Projeto projeto) {
         if (projeto == null || projeto.getNome() == null || projeto.getNome().isBlank()) {
+            LogConfig.error("CAMPO_INVALIDO", "Tentativa de adicionar projeto inválido: nome ausente.", null);
             logger.warn("Tentativa de adicionar projeto inválido: nome ausente.");
             return false;
         }
@@ -79,6 +81,7 @@ public class ProjetoService {
             logger.info("Projeto com ID {} ('{}') removido com sucesso.", id, projeto.getNome());
             return true;
         }
+        LogConfig.error("CAMPO_INVALIDO", "Falha ao remover: projeto com ID " + id + " não encontrado.", null);
         logger.warn("Falha ao remover: projeto com ID {} não foi encontrado.", id);
         return false;
     }
@@ -91,6 +94,7 @@ public class ProjetoService {
         Projeto projeto = buscarPorId(id);
 
         if (projeto == null) {
+            LogConfig.error("CAMPO_INVALIDO", "Falha ao alterar status: projeto ID " + id + " não encontrado.", null);
             logger.warn("Falha ao alterar status: projeto com ID {} não encontrado.", id);
             return false;
         }
@@ -114,15 +118,25 @@ public class ProjetoService {
 
     public void carregarProjetos() throws Exception {
         logger.debug("Carregando projetos do DAO...");
-        projetos = dao.listar();
-        logger.debug("Total de projetos carregados: {}", projetos.size());
+        try {
+            projetos = dao.listar();
+            logger.debug("Total de projetos carregados: {}", projetos.size());
+        } catch (Exception e) {
+            LogConfig.error("LEITURA_CSV", "Erro ao carregar projetos do arquivo CSV: " + e.getMessage(), e);
+            throw e;
+        }
     }
 
     public void salvar() throws Exception {
         logger.debug("Salvando {} projetos no DAO...", projetos.size());
-        dao.salvar(projetos);
-        carregarProjetos();
-        logger.debug("Projetos salvos com sucesso.");
+        try {
+            dao.salvar(projetos);
+            carregarProjetos();
+            logger.debug("Projetos salvos com sucesso.");
+        } catch (Exception e) {
+            LogConfig.error("LEITURA_CSV", "Erro ao salvar projetos no arquivo CSV: " + e.getMessage(), e);
+            throw e;
+        }
     }
 
     public int proximoId() {
@@ -141,6 +155,7 @@ public class ProjetoService {
         Projeto projeto = buscarPorId(id);
 
         if (projeto == null) {
+            LogConfig.error("CAMPO_INVALIDO", "Falha ao alterar: projeto com ID " + id + " não encontrado.", null);
             logger.warn("Falha ao alterar: projeto com ID {} não encontrado.", id);
             return false;
         }

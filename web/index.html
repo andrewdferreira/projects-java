@@ -37,8 +37,9 @@
                         <select id="categoria" name="categoria" required>
                             <option value="" disabled selected>Selecione uma categoria</option>
                             <option value="Web">Web</option>
+                            <option value="Software">Software</option>
                             <option value="Mobile">Mobile</option>
-                            <option value="Desktop">Software</option>
+                            <option value="Desktop">Desktop</option>
                             <option value="Outros">Outro</option>
                         </select>
                     </label>
@@ -47,8 +48,9 @@
                         <select id="status" name="status" required>
                             <option value="" disabled selected>Selecione um status</option>
                             <option value="Concluído">Concluído</option>
-                            <option value="Em andamento">Em Andamento</option>
+                            <option value="Em andamento">Em Desenv.</option>
                             <option value="Planejado">Planejado</option>
+                            <option value="Cancelado">Cancelado</option>
                         </select>
                     </label>
                 </div>
@@ -84,15 +86,17 @@
                     <select id="filtroCategoria" class="filter-select" onchange="AplicarFiltros()">
                         <option value="todas">Todas Categorias</option>
                         <option value="Web">Web</option>
+                        <option value="Software">Software</option>
                         <option value="Mobile">Mobile</option>
-                        <option value="Desktop">Software</option>
+                        <option value="Desktop">Desktop</option>
                         <option value="Outros">Outro</option>
                     </select>
                     <select id="filtroStatus" class="filter-select" onchange="AplicarFiltros()">
                         <option value="todos">Todos Status</option>
                         <option value="Planejado">Planejado</option>
-                        <option value="Em andamento">Em Andamento</option>
+                        <option value="Em andamento">Em Desenv.</option>
                         <option value="Concluído">Concluído</option>
+                        <option value="Cancelado">Cancelado</option>
                     </select>
                     <button type="button" class="button button-secondary" onclick="LimparFiltros()">
                         Limpar Filtros
@@ -127,53 +131,53 @@
         </div>
 
         <div class="modal-overlay" id="modalGraficos" style="display: none;" onclick="if(event.target === this) FecharModalGraficos()">
-            <div class="modal-content-custom" style="max-width: 820px; padding: 24px;">
+            <div class="modal-content-custom" style="max-width: 860px; padding: 24px;">
                 <div class="section-heading" style="border-bottom: 1px solid var(--line); padding-bottom: 14px; margin-bottom: 20px;">
                     <div>
-                        <p class="eyebrow">DASHBOARD ESTATÍSTICO</p>
-                        <h2>Gráficos de Pizza dos Projetos</h2>
+                        <p class="eyebrow">DASHBOARDS ANALÍTICOS</p>
+                        <h2>Dashboards de Projetos (D1, D2, D3)</h2>
                     </div>
                     <button class="button button-quiet" type="button" onclick="FecharModalGraficos()" style="cursor: pointer;">Fechar ✕</button>
                 </div>
 
-                <!-- Cards de KPI -->
+                <!-- D1: Cards de KPI (Total, Concluídos, Ativos, Cancelados) -->
                 <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px;">
                     <div style="background: var(--canvas); border-top: 3px solid #2563eb; padding: 12px; border-radius: 6px;">
-                        <span style="font-size: 11px; font-weight: 700; color: var(--muted);">TOTAL</span>
+                        <span style="font-size: 11px; font-weight: 700; color: var(--muted);">D1 • TOTAL</span>
                         <h3 id="kpiTotal" style="margin: 4px 0 0; font-size: 22px; color: var(--ink);">0</h3>
                     </div>
                     <div style="background: var(--canvas); border-top: 3px solid #10b981; padding: 12px; border-radius: 6px;">
-                        <span style="font-size: 11px; font-weight: 700; color: var(--muted);">CONCLUÍDOS</span>
+                        <span style="font-size: 11px; font-weight: 700; color: var(--muted);">D1 • CONCLUÍDOS</span>
                         <h3 id="kpiConcluidos" style="margin: 4px 0 0; font-size: 22px; color: var(--ink);">0</h3>
                     </div>
                     <div style="background: var(--canvas); border-top: 3px solid #f59e0b; padding: 12px; border-radius: 6px;">
-                        <span style="font-size: 11px; font-weight: 700; color: var(--muted);">EM ANDAMENTO</span>
-                        <h3 id="kpiAndamento" style="margin: 4px 0 0; font-size: 22px; color: var(--ink);">0</h3>
+                        <span style="font-size: 11px; font-weight: 700; color: var(--muted);">D1 • ATIVOS</span>
+                        <h3 id="kpiAtivos" style="margin: 4px 0 0; font-size: 22px; color: var(--ink);">0</h3>
                     </div>
-                    <div style="background: var(--canvas); border-top: 3px solid #8b5cf6; padding: 12px; border-radius: 6px;">
-                        <span style="font-size: 11px; font-weight: 700; color: var(--muted);">PLANEJADOS</span>
-                        <h3 id="kpiPlanejados" style="margin: 4px 0 0; font-size: 22px; color: var(--ink);">0</h3>
+                    <div style="background: var(--canvas); border-top: 3px solid #ef4444; padding: 12px; border-radius: 6px;">
+                        <span style="font-size: 11px; font-weight: 700; color: var(--muted);">D1 • CANCELADOS</span>
+                        <h3 id="kpiCancelados" style="margin: 4px 0 0; font-size: 22px; color: var(--ink);">0</h3>
                     </div>
                 </div>
 
-                <!-- Gráficos de Pizza Lado a Lado -->
+                <!-- D2 e D3: Gráfico de Pizza (Status) e Gráfico de Barras (Categoria) -->
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                    <!-- Gráfico Categoria -->
+                    <!-- D2: Gráfico de Pizza (Status) -->
                     <div style="background: #fafdfa; border: 1px solid var(--line); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; align-items: center;">
-                        <h3 style="font-size: 15px; margin: 0 0 14px; color: var(--ink); width: 100%; text-align: left;">Distribuição por Categoria</h3>
-                        <div style="position: relative; display: flex; justify-content: center; align-items: center; width: 100%; margin-bottom: 12px;">
-                            <canvas id="canvasCategorias" width="220" height="220"></canvas>
-                        </div>
-                        <div id="legendaCategorias" style="display: flex; flex-direction: column; gap: 8px; width: 100%; padding-top: 12px; border-top: 1px solid var(--line);"></div>
-                    </div>
-
-                    <!-- Gráfico Status -->
-                    <div style="background: #fafdfa; border: 1px solid var(--line); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; align-items: center;">
-                        <h3 style="font-size: 15px; margin: 0 0 14px; color: var(--ink); width: 100%; text-align: left;">Distribuição por Status</h3>
+                        <h3 style="font-size: 15px; margin: 0 0 14px; color: var(--ink); width: 100%; text-align: left;">D2 • Distribuição por Status (Pizza)</h3>
                         <div style="position: relative; display: flex; justify-content: center; align-items: center; width: 100%; margin-bottom: 12px;">
                             <canvas id="canvasStatus" width="220" height="220"></canvas>
                         </div>
                         <div id="legendaStatus" style="display: flex; flex-direction: column; gap: 8px; width: 100%; padding-top: 12px; border-top: 1px solid var(--line);"></div>
+                    </div>
+
+                    <!-- D3: Gráfico de Barras (Categoria) -->
+                    <div style="background: #fafdfa; border: 1px solid var(--line); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; align-items: center;">
+                        <h3 style="font-size: 15px; margin: 0 0 14px; color: var(--ink); width: 100%; text-align: left;">D3 • Distribuição por Categoria (Barras)</h3>
+                        <div style="position: relative; display: flex; justify-content: center; align-items: center; width: 100%; margin-bottom: 12px;">
+                            <canvas id="canvasCategorias" width="320" height="220"></canvas>
+                        </div>
+                        <div id="legendaCategorias" style="display: flex; flex-direction: column; gap: 8px; width: 100%; padding-top: 12px; border-top: 1px solid var(--line);"></div>
                     </div>
                 </div>
             </div>

@@ -11,8 +11,12 @@ import java.util.List;
 
 /**
  * Servidor HTTP REST da aplicação utilizando Javalin.
- * Possui rastreamento e auditoria completos via SLF4J para todas as requisições,
- * operações de CRUD (criação, leitura, atualização e exclusão), validações e tratamentos de erro.
+ * Integrado aos 5 tipos de logs estruturados em logs/:
+ * - application.log: Inicialização e encerramento do serviço.
+ * - access.log: Acessos recebidos na API.
+ * - audit.log: Inclusão, Alteração e Exclusão de projetos.
+ * - error.log: Falhas de validação, erros de persistência CSV e requisições inválidas.
+ * - api.log: Registro de requisições HTTP (GET, POST, PUT, DELETE).
  */
 public class Api {
 
@@ -23,13 +27,15 @@ public class Api {
     private static final Logger logger = LoggerFactory.getLogger(Api.class);
 
     public static void main() {
+        LogConfig.application("INFO", "Iniciando servidor de API REST na porta 7070...");
         logger.info("Inicializando o serviço de projetos e a API REST...");
 
         ProjetoService service = new ProjetoService();
         try {
             service.carregarProjetos();
-            logger.info("Carga inicial de dados concluída. Total de projetos carregados: {}", service.listarProjetos().size());
+            LogConfig.application("INFO", "Carga inicial de dados concluída. Total de projetos: " + service.listarProjetos().size());
         } catch (Exception e) {
+            LogConfig.error("LEITURA_CSV", "Erro ao carregar dados iniciais do CSV: " + e.getMessage(), e);
             logger.error("Erro crítico ao carregar dados iniciais do CSV: {}", e.getMessage(), e);
         }
 
@@ -42,41 +48,49 @@ public class Api {
                 });
             });
 
-            // Interceptor de requisições: Loga todas as chamadas de API recebidas
+            // Interceptor de requisições: Marca tempo de início e registra acesso
             config.routes.before(ctx -> {
-                logger.info("[CHAMADA DE API] Recebida requisição {} {} | IP: {}", 
+                ctx.attribute("reqStartTime", System.currentTimeMillis());
+                LogConfig.access(String.format("Requisição HTTP recebida: %s %s | Origem: %s",
+                        ctx.method(), ctx.path(), ctx.ip()));
+                logger.info("[CHAMADA DE API] Recebida requisição {} {} | IP: {}",
                         ctx.method(), ctx.path(), ctx.ip());
             });
 
-            // Interceptor de respostas: Loga o status HTTP final entregue ao cliente
+            // Interceptor de respostas: Grava api.log com método, rota, status e latência
             config.routes.after(ctx -> {
-                logger.info("[RESPOSTA API] {} {} concluída com status HTTP {}", 
-                        ctx.method(), ctx.path(), ctx.status());
+                Long startTime = ctx.attribute("reqStartTime");
+                long duracao = startTime != null ? (System.currentTimeMillis() - startTime) : 0;
+                int statusCode = ctx.status().getCode();
+
+                LogConfig.api(ctx.method().toString(), ctx.path(), statusCode, duracao, ctx.ip());
+                logger.info("[RESPOSTA API] {} {} concluída com status HTTP {} ({}ms)",
+                        ctx.method(), ctx.path(), statusCode, duracao);
             });
 
             // Tratamento global de exceções
             config.routes.exception(Exception.class, (e, ctx) -> {
-                logger.error("[ERRO NÃO TRATADO] Falha interna ao processar {} {}: {}", 
+                LogConfig.error("ERRO_INTERNO", "Falha não tratada ao processar " + ctx.method() + " " + ctx.path() + ": " + e.getMessage(), e);
+                LogConfig.application("ERROR", "Exceção em rota " + ctx.path() + ": " + e.getMessage());
+                logger.error("[ERRO NÃO TRATADO] Falha interna ao processar {} {}: {}",
                         ctx.method(), ctx.path(), e.getMessage(), e);
                 ctx.status(500).json(new ErroResponse("Erro interno no servidor: " + e.getMessage()));
             });
 
-            // Rota raiz de verificação
+            // Rota raiz de verificação de integridade
             config.routes.get("/", ctx -> {
-                logger.info("Rota raiz '/' acessada para verificação de status da API.");
+                LogConfig.access("Verificação de status via rota raiz '/' por " + ctx.ip());
                 ctx.result("API Sistema de Projetos");
             });
 
             // GET: Listar todos os projetos
             config.routes.get("/api/projetos", ctx -> {
-                logger.info("[CONSULTA] Solicitada listagem completa de projetos.");
                 try {
                     service.carregarProjetos();
                     List<Projeto> projetos = service.listarProjetos();
-                    logger.info("[CONSULTA] Retornando {} projeto(s) cadastrado(s).", projetos.size());
                     ctx.json(projetos);
                 } catch (Exception e) {
-                    logger.error("[ERRO PERSISTÊNCIA] Falha ao recarregar projetos no GET /api/projetos: {}", e.getMessage(), e);
+                    LogConfig.error("LEITURA_CSV", "Falha ao recarregar projetos no GET /api/projetos: " + e.getMessage(), e);
                     ctx.status(500).json(new ErroResponse("Erro ao ler dados dos projetos"));
                 }
             });
@@ -84,13 +98,11 @@ public class Api {
             // GET: Buscar projeto por ID
             config.routes.get("/api/projetos/{id}", ctx -> {
                 String idParam = ctx.pathParam("id");
-                logger.info("[CONSULTA] Solicitada busca de projeto pelo ID: '{}'.", idParam);
-
                 int id;
                 try {
                     id = Integer.parseInt(idParam);
                 } catch (NumberFormatException e) {
-                    logger.warn("[VALIDAÇÃO] Falha na busca: ID informado '{}' não é um número inteiro válido.", idParam);
+                    LogConfig.error("CAMPO_INVALIDO", "ID não numérico fornecido na rota: '" + idParam + "'", null);
                     ctx.status(400).json(new ErroResponse("O ID do projeto deve ser um número inteiro"));
                     return;
                 }
@@ -100,48 +112,42 @@ public class Api {
                     Projeto projeto = service.buscarPorId(id);
 
                     if (projeto == null) {
-                        logger.warn("[CONSULTA] Projeto com ID {} não foi localizado no sistema.", id);
                         ctx.status(404).json(new ErroResponse("Projeto com ID " + id + " não encontrado"));
                         return;
                     }
 
-                    logger.info("[CONSULTA] Projeto ID {} localizado com sucesso: '{}'.", id, projeto.getNome());
                     ctx.json(projeto);
                 } catch (Exception e) {
-                    logger.error("[ERRO PERSISTÊNCIA] Falha ao consultar projeto ID {}: {}", id, e.getMessage(), e);
+                    LogConfig.error("LEITURA_CSV", "Falha ao consultar projeto ID " + id + ": " + e.getMessage(), e);
                     ctx.status(500).json(new ErroResponse("Erro ao consultar projeto no banco de dados"));
                 }
             });
 
             // GET: Categorias disponíveis
             config.routes.get("/api/categorias", ctx -> {
-                logger.info("[METADADOS] Solicitada lista de categorias disponíveis.");
-                String[] categorias = {"Web", "Software", "Mobile", "Outros"};
+                String[] categorias = {"Web", "Software", "Mobile", "Desktop", "Outros"};
                 ctx.json(categorias);
             });
 
             // GET: Status disponíveis
             config.routes.get("/api/status", ctx -> {
-                logger.info("[METADADOS] Solicitada lista de status disponíveis.");
-                String[] status = {"Planejado", "Em andamento", "Concluído"};
+                String[] status = {"Planejado", "Em andamento", "Concluído", "Cancelado"};
                 ctx.json(status);
             });
 
             // POST: Criação de novo projeto
             config.routes.post("/api/projetos", ctx -> {
-                logger.info("[CRIAÇÃO] Recebida solicitação para criar novo projeto.");
-
                 Projeto projeto;
                 try {
                     projeto = ctx.bodyAsClass(Projeto.class);
                 } catch (Exception e) {
-                    logger.warn("[VALIDAÇÃO] Corpo JSON da requisição de criação é inválido: {}", e.getMessage());
+                    LogConfig.error("CAMPO_INVALIDO", "Corpo JSON malformado no POST /api/projetos: " + e.getMessage(), e);
                     ctx.status(400).json(new ErroResponse("Corpo da requisição JSON inválido ou malformado"));
                     return;
                 }
 
                 if (projeto == null || projeto.getNome() == null || projeto.getNome().isBlank()) {
-                    logger.warn("[VALIDAÇÃO] Falha na criação: campo obrigatório 'nome' está nulo ou vazio.");
+                    LogConfig.error("CAMPO_INVALIDO", "Tentativa de cadastro com campo 'nome' vazio no POST /api/projetos", null);
                     ctx.status(400).json(new ErroResponse("O nome do projeto é obrigatório"));
                     return;
                 }
@@ -151,12 +157,14 @@ public class Api {
                     service.adicionarProjeto(projeto);
                     service.salvar();
 
-                    logger.info("[CRIAÇÃO SUCESSO] Projeto cadastrado com sucesso! ID={}: Nome='{}', Categoria='{}', Status='{}'",
-                            projeto.getId(), projeto.getNome(), projeto.getCategoria(), projeto.getStatus());
+                    // AUDITORIA PRINCIPAL: Criação de projeto
+                    LogConfig.audit("CRIADO", projeto.getId(),
+                            String.format("Nome='%s', Categoria='%s', Status='%s'",
+                                    projeto.getNome(), projeto.getCategoria(), projeto.getStatus()));
 
                     ctx.status(201).json(projeto);
                 } catch (Exception e) {
-                    logger.error("[ERRO PERSISTÊNCIA] Falha ao salvar novo projeto: {}", e.getMessage(), e);
+                    LogConfig.error("LEITURA_CSV", "Falha ao persistir novo projeto no CSV: " + e.getMessage(), e);
                     ctx.status(500).json(new ErroResponse("Erro ao persistir novo projeto no banco de dados"));
                 }
             });
@@ -164,13 +172,11 @@ public class Api {
             // PUT: Atualização de projeto existente
             config.routes.put("/api/projetos/{id}", ctx -> {
                 String idParam = ctx.pathParam("id");
-                logger.info("[UPDATE] Recebida solicitação para atualizar projeto ID: '{}'.", idParam);
-
                 int id;
                 try {
                     id = Integer.parseInt(idParam);
                 } catch (NumberFormatException e) {
-                    logger.warn("[VALIDAÇÃO] Falha no update: ID '{}' não é um número válido.", idParam);
+                    LogConfig.error("CAMPO_INVALIDO", "ID não numérico fornecido no PUT: '" + idParam + "'", null);
                     ctx.status(400).json(new ErroResponse("O ID do projeto deve ser um número inteiro"));
                     return;
                 }
@@ -179,13 +185,13 @@ public class Api {
                 try {
                     projetoAtualizado = ctx.bodyAsClass(Projeto.class);
                 } catch (Exception e) {
-                    logger.warn("[VALIDAÇÃO] Corpo JSON inválido para atualização do projeto ID {}: {}", id, e.getMessage());
+                    LogConfig.error("CAMPO_INVALIDO", "JSON malformado no PUT /api/projetos/" + id + ": " + e.getMessage(), e);
                     ctx.status(400).json(new ErroResponse("Corpo da requisição JSON inválido ou malformado"));
                     return;
                 }
 
                 if (projetoAtualizado == null || projetoAtualizado.getNome() == null || projetoAtualizado.getNome().isBlank()) {
-                    logger.warn("[VALIDAÇÃO] Falha no update: campo obrigatório 'nome' não informado para projeto ID {}.", id);
+                    LogConfig.error("CAMPO_INVALIDO", "Campo 'nome' em branco no PUT /api/projetos/" + id, null);
                     ctx.status(400).json(new ErroResponse("O nome do projeto é obrigatório para alteração"));
                     return;
                 }
@@ -197,18 +203,21 @@ public class Api {
                     boolean alterou = service.alterarProjeto(id, projetoAtualizado);
 
                     if (!alterou) {
-                        logger.warn("[UPDATE FALHA] Projeto com ID {} não encontrado para alteração.", id);
+                        LogConfig.error("CAMPO_INVALIDO", "Projeto ID " + id + " inexistente para alteração", null);
                         ctx.status(404).json(new ErroResponse("Projeto com ID " + id + " não encontrado"));
                         return;
                     }
 
                     service.salvar();
-                    logger.info("[UPDATE SUCESSO] Projeto ID {} alterado com sucesso! Nome='{}', Categoria='{}', Status='{}'",
-                            id, projetoAtualizado.getNome(), projetoAtualizado.getCategoria(), projetoAtualizado.getStatus());
+
+                    // AUDITORIA PRINCIPAL: Alteração de projeto
+                    LogConfig.audit("ALTERADO", id,
+                            String.format("Nome='%s', Categoria='%s', Status='%s'",
+                                    projetoAtualizado.getNome(), projetoAtualizado.getCategoria(), projetoAtualizado.getStatus()));
 
                     ctx.status(200).json(projetoAtualizado);
                 } catch (Exception e) {
-                    logger.error("[ERRO PERSISTÊNCIA] Falha ao persistir alterações do projeto ID {}: {}", id, e.getMessage(), e);
+                    LogConfig.error("LEITURA_CSV", "Falha ao salvar alterações do projeto ID " + id + ": " + e.getMessage(), e);
                     ctx.status(500).json(new ErroResponse("Erro ao salvar alterações do projeto"));
                 }
             });
@@ -216,13 +225,11 @@ public class Api {
             // DELETE: Exclusão de projeto por ID
             config.routes.delete("/api/projetos/{id}", ctx -> {
                 String idParam = ctx.pathParam("id");
-                logger.info("[DELETE] Recebida solicitação para excluir projeto ID: '{}'.", idParam);
-
                 int id;
                 try {
                     id = Integer.parseInt(idParam);
                 } catch (NumberFormatException e) {
-                    logger.warn("[VALIDAÇÃO] Falha no delete: ID '{}' não é um número inteiro válido.", idParam);
+                    LogConfig.error("CAMPO_INVALIDO", "ID não numérico fornecido no DELETE: '" + idParam + "'", null);
                     ctx.status(400).json(new ErroResponse("O ID do projeto deve ser um número inteiro"));
                     return;
                 }
@@ -232,7 +239,7 @@ public class Api {
                     Projeto projeto = service.buscarPorId(id);
 
                     if (projeto == null) {
-                        logger.warn("[DELETE FALHA] Projeto com ID {} não encontrado para exclusão.", id);
+                        LogConfig.error("CAMPO_INVALIDO", "Projeto ID " + id + " não encontrado para exclusão", null);
                         ctx.status(404).json(new ErroResponse("Projeto com ID " + id + " não encontrado"));
                         return;
                     }
@@ -240,16 +247,19 @@ public class Api {
                     service.removerPorId(id);
                     service.salvar();
 
-                    logger.info("[DELETE SUCESSO] Projeto ID {} ('{}') excluído com sucesso do sistema.", id, projeto.getNome());
+                    // AUDITORIA PRINCIPAL: Exclusão de projeto
+                    LogConfig.audit("EXCLUIDO", id, "Nome='" + projeto.getNome() + "'");
+
                     ctx.status(200).json(projeto);
                 } catch (Exception e) {
-                    logger.error("[ERRO PERSISTÊNCIA] Falha ao excluir projeto ID {}: {}", id, e.getMessage(), e);
+                    LogConfig.error("LEITURA_CSV", "Falha ao excluir projeto ID " + id + " no CSV: " + e.getMessage(), e);
                     ctx.status(500).json(new ErroResponse("Erro ao excluir projeto do banco de dados"));
                 }
             });
 
         }).start(7070);
 
+        LogConfig.application("INFO", "API REST iniciada com sucesso em http://localhost:7070");
         logger.info("API Sistema de Projetos iniciada com sucesso na porta 7070!");
     }
 }
