@@ -2,12 +2,16 @@ package service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 import model.Projeto;
 import dao.ProjetoCSV;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ProjetoService {
+
+    private static final Logger logger = LoggerFactory.getLogger(ProjetoService.class);
+
     private List<Projeto> projetos;
     private ProjetoCSV dao;
 
@@ -17,14 +21,15 @@ public class ProjetoService {
     }
 
     public boolean adicionarProjeto(Projeto projeto) {
-
-        if (projeto.getNome() == null || projeto.getNome().isBlank()) {
+        if (projeto == null || projeto.getNome() == null || projeto.getNome().isBlank()) {
+            logger.warn("Tentativa de adicionar projeto inválido: nome ausente.");
             return false;
         }
 
         projeto.setId(proximoId());
-
         projetos.add(projeto);
+        logger.info("Projeto adicionado com sucesso ao serviço: ID={}, Nome='{}', Categoria='{}', Status='{}'",
+                projeto.getId(), projeto.getNome(), projeto.getCategoria(), projeto.getStatus());
 
         return true;
     }
@@ -71,9 +76,10 @@ public class ProjetoService {
 
         if (projeto != null) {
             projetos.remove(projeto);
-            System.out.println("Projeto com ID " + id + " removido com sucesso");
+            logger.info("Projeto com ID {} ('{}') removido com sucesso.", id, projeto.getNome());
             return true;
         }
+        logger.warn("Falha ao remover: projeto com ID {} não foi encontrado.", id);
         return false;
     }
 
@@ -85,10 +91,12 @@ public class ProjetoService {
         Projeto projeto = buscarPorId(id);
 
         if (projeto == null) {
+            logger.warn("Falha ao alterar status: projeto com ID {} não encontrado.", id);
             return false;
         }
 
         projeto.setStatus(novoStatus);
+        logger.info("Status do projeto ID {} alterado para '{}'.", id, novoStatus);
         return true;
     }
 
@@ -105,12 +113,16 @@ public class ProjetoService {
     }
 
     public void carregarProjetos() throws Exception {
+        logger.debug("Carregando projetos do DAO...");
         projetos = dao.listar();
+        logger.debug("Total de projetos carregados: {}", projetos.size());
     }
 
     public void salvar() throws Exception {
+        logger.debug("Salvando {} projetos no DAO...", projetos.size());
         dao.salvar(projetos);
         carregarProjetos();
+        logger.debug("Projetos salvos com sucesso.");
     }
 
     public int proximoId() {
@@ -129,6 +141,7 @@ public class ProjetoService {
         Projeto projeto = buscarPorId(id);
 
         if (projeto == null) {
+            logger.warn("Falha ao alterar: projeto com ID {} não encontrado.", id);
             return false;
         }
 
@@ -136,6 +149,9 @@ public class ProjetoService {
         projeto.setDescricao(projetoAtualizado.getDescricao());
         projeto.setCategoria(projetoAtualizado.getCategoria());
         projeto.setStatus(projetoAtualizado.getStatus());
+
+        logger.info("Projeto ID {} alterado com sucesso no serviço: Nome='{}', Categoria='{}', Status='{}'",
+                id, projeto.getNome(), projeto.getCategoria(), projeto.getStatus());
         return true;
     }
 

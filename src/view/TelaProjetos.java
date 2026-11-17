@@ -42,8 +42,11 @@ public class TelaProjetos extends JFrame {
     private JButton botaoLimpar;
     private JButton botaoAlterar;
     private JButton botaoExcluir;
+    private JButton botaoGraficos;
 
     private ProjetoService service;
+    private TelaGraficos telaGraficos;
+    private Timer timerAutoReload;
 
     public TelaProjetos() {
         inicializarTemaFlatLaf();
@@ -57,7 +60,8 @@ public class TelaProjetos extends JFrame {
 
         criarComponentes();
         criarEventos();
-        carregarTabela(service.listarProjetos());
+        recarregarDados();
+        iniciarAutoReload();
     }
 
     private void inicializarTemaFlatLaf() {
@@ -86,13 +90,16 @@ public class TelaProjetos extends JFrame {
         painelPrincipal.setBackground(COLOR_CANVAS);
 
         // 1. HEADER DA PÁGINA (Ocupa toda a largura superior)
-        JPanel painelHeader = new JPanel();
-        painelHeader.setLayout(new BoxLayout(painelHeader, BoxLayout.Y_AXIS));
+        JPanel painelHeader = new JPanel(new BorderLayout());
         painelHeader.setBackground(COLOR_GREEN_DARK);
         painelHeader.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(0, 0, 4, 0, Color.decode("#b9d85c")),
-                new EmptyBorder(24, 32, 26, 32)
+                new EmptyBorder(22, 32, 22, 32)
         ));
+
+        JPanel painelTitulos = new JPanel();
+        painelTitulos.setLayout(new BoxLayout(painelTitulos, BoxLayout.Y_AXIS));
+        painelTitulos.setBackground(COLOR_GREEN_DARK);
 
         JLabel lblEyebrowHeader = new JLabel("GESTÃO DE PORTFÓLIO");
         lblEyebrowHeader.setForeground(Color.decode("#c3dc89"));
@@ -102,9 +109,28 @@ public class TelaProjetos extends JFrame {
         lblTituloHeader.setForeground(Color.WHITE);
         lblTituloHeader.setFont(new Font("Space Grotesk", Font.BOLD, 28));
 
-        painelHeader.add(lblEyebrowHeader);
-        painelHeader.add(Box.createVerticalStrut(4));
-        painelHeader.add(lblTituloHeader);
+        painelTitulos.add(lblEyebrowHeader);
+        painelTitulos.add(Box.createVerticalStrut(4));
+        painelTitulos.add(lblTituloHeader);
+
+        // Botão para abrir o Dashboard de Gráficos de Pizza
+        botaoGraficos = new JButton("📊 Gráficos de Pizza");
+        botaoGraficos.setBackground(COLOR_GREEN);
+        botaoGraficos.setForeground(Color.WHITE);
+        botaoGraficos.setFont(new Font("DM Sans", Font.BOLD, 13));
+        botaoGraficos.setFocusPainted(false);
+        botaoGraficos.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        botaoGraficos.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Color.decode("#2aa37d"), 1),
+                new EmptyBorder(8, 16, 8, 16)
+        ));
+
+        JPanel painelHeaderDireita = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 8));
+        painelHeaderDireita.setBackground(COLOR_GREEN_DARK);
+        painelHeaderDireita.add(botaoGraficos);
+
+        painelHeader.add(painelTitulos, BorderLayout.WEST);
+        painelHeader.add(painelHeaderDireita, BorderLayout.EAST);
 
         // Painel de conteúdo interno com um respiro elegante nas laterais
         JPanel painelConteudo = new JPanel();
@@ -262,6 +288,8 @@ public class TelaProjetos extends JFrame {
         JScrollPane scrollPane = new JScrollPane(tabela);
         scrollPane.getViewport().setBackground(COLOR_SURFACE);
         scrollPane.setBorder(BorderFactory.createLineBorder(COLOR_LINE, 1));
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        scrollPane.getHorizontalScrollBar().setUnitIncrement(16);
 
         JPanel tableFrame = new JPanel(new BorderLayout());
         tableFrame.setBackground(COLOR_SURFACE);
@@ -273,8 +301,13 @@ public class TelaProjetos extends JFrame {
         painelConteudo.add(painelFormularioCard);
         painelConteudo.add(painelTabelaSecao);
 
+        JScrollPane scrollPanePrincipal = new JScrollPane(painelConteudo);
+        scrollPanePrincipal.getVerticalScrollBar().setUnitIncrement(20);
+        scrollPanePrincipal.getHorizontalScrollBar().setUnitIncrement(20);
+        scrollPanePrincipal.setBorder(null);
+
         painelPrincipal.add(painelHeader, BorderLayout.NORTH);
-        painelPrincipal.add(new JScrollPane(painelConteudo), BorderLayout.CENTER);
+        painelPrincipal.add(scrollPanePrincipal, BorderLayout.CENTER);
 
         add(painelPrincipal);
     }
@@ -348,6 +381,7 @@ public class TelaProjetos extends JFrame {
     }
 
     private void criarEventos() {
+        botaoGraficos.addActionListener(e -> abrirTelaGraficos());
         botaoLimpar.addActionListener(e -> limparFormulario());
         botaoCadastrar.addActionListener(e -> cadastrar());
         botaoAlterar.addActionListener(e -> alterarSelecionadoTabela());
@@ -384,22 +418,63 @@ public class TelaProjetos extends JFrame {
         });
     }
 
-    private void aplicarFiltros() {
-        String textoBusca = campoBusca.getText().toLowerCase().trim();
-        String catSelecionada = (String) comboFiltroCategoria.getSelectedItem();
-        String statusSelecionado = (String) comboFiltroStatus.getSelectedItem();
+    public void recarregarDados() {
+        try {
+            service.carregarProjetos();
+        } catch (Exception e) {
+            System.err.println("Erro ao recarregar projetos: " + e.getMessage());
+        }
+        aplicarFiltros();
+    }
 
-        List<Projeto> projetosFiltrados = service.listarProjetos().stream().filter(p -> {
-            boolean matchBusca = p.getNome().toLowerCase().contains(textoBusca) || 
-                                 p.getDescricao().toLowerCase().contains(textoBusca);
+    private void aplicarFiltros() {
+        String textoBusca = campoBusca != null ? campoBusca.getText().toLowerCase().trim() : "";
+        String catSelecionada = comboFiltroCategoria != null ? (String) comboFiltroCategoria.getSelectedItem() : "Todas Categorias";
+        String statusSelecionado = comboFiltroStatus != null ? (String) comboFiltroStatus.getSelectedItem() : "Todos Status";
+
+        List<Projeto> todos = service.listarProjetos();
+        if (todos == null) {
+            carregarTabela(List.of());
+            return;
+        }
+
+        List<Projeto> projetosFiltrados = todos.stream().filter(p -> {
+            boolean matchBusca = textoBusca.isEmpty() || 
+                                 (p.getNome() != null && p.getNome().toLowerCase().contains(textoBusca)) || 
+                                 (p.getDescricao() != null && p.getDescricao().toLowerCase().contains(textoBusca));
             
-            boolean matchCat = catSelecionada.equals("Todas Categorias") || p.getCategoria().equalsIgnoreCase(catSelecionada);
-            boolean matchStatus = statusSelecionado.equals("Todos Status") || p.getStatus().equalsIgnoreCase(statusSelecionado);
+            boolean matchCat = correspondeCategoria(p.getCategoria(), catSelecionada);
+            boolean matchStatus = correspondeStatus(p.getStatus(), statusSelecionado);
 
             return matchBusca && matchCat && matchStatus;
         }).collect(Collectors.toList());
 
         carregarTabela(projetosFiltrados);
+    }
+
+    private boolean correspondeCategoria(String catProjeto, String catFiltro) {
+        if (catFiltro == null || "Todas Categorias".equalsIgnoreCase(catFiltro)) return true;
+        if (catProjeto == null) return false;
+        String cp = catProjeto.trim().toLowerCase();
+        String cf = catFiltro.trim().toLowerCase();
+        if (cp.equals(cf)) return true;
+        if (cf.contains("soft") && (cp.contains("soft") || cp.contains("desk"))) return true;
+        if (cf.contains("web") && cp.contains("web")) return true;
+        if (cf.contains("mobi") && cp.contains("mobi")) return true;
+        if (cf.contains("outro") && cp.contains("outro")) return true;
+        return false;
+    }
+
+    private boolean correspondeStatus(String statusProjeto, String statusFiltro) {
+        if (statusFiltro == null || "Todos Status".equalsIgnoreCase(statusFiltro)) return true;
+        if (statusProjeto == null) return false;
+        String sp = statusProjeto.trim().toLowerCase();
+        String sf = statusFiltro.trim().toLowerCase();
+        if (sp.equals(sf)) return true;
+        if (sf.contains("conclu") && sp.contains("conclu")) return true;
+        if (sf.contains("andamento") && (sp.contains("andamento") || sp.contains("desenvolvimento"))) return true;
+        if (sf.contains("planeja") && sp.contains("planeja")) return true;
+        return false;
     }
 
     private void limparFormulario() {
@@ -410,12 +485,7 @@ public class TelaProjetos extends JFrame {
         tabela.clearSelection();
         campoNome.requestFocus();
 
-        try {
-            service.carregarProjetos();
-            aplicarFiltros();
-        } catch (Exception e) {
-            System.err.println(e);
-        }
+        recarregarDados();
     }
 
     private void cadastrar() {
@@ -436,6 +506,7 @@ public class TelaProjetos extends JFrame {
             service.salvar();
             JOptionPane.showMessageDialog(this, "Projeto cadastrado com sucesso!");
             limparFormulario();
+            atualizarTelaGraficosSeAberta();
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Erro ao salvar: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
         }
@@ -472,6 +543,7 @@ public class TelaProjetos extends JFrame {
             service.salvar();
             JOptionPane.showMessageDialog(this, "Projeto alterado com sucesso.");
             limparFormulario();
+            atualizarTelaGraficosSeAberta();
         } catch (Exception a) {
             JOptionPane.showMessageDialog(this, "Erro ao alterar: " + a.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
         }
@@ -511,6 +583,7 @@ public class TelaProjetos extends JFrame {
                 service.salvar();
                 JOptionPane.showMessageDialog(this, "Projeto excluído com sucesso!");
                 limparFormulario();
+                atualizarTelaGraficosSeAberta();
             } catch (Exception e) {
                 JOptionPane.showMessageDialog(this, "Erro ao excluir: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
             }
@@ -518,22 +591,47 @@ public class TelaProjetos extends JFrame {
     }
 
     private void carregarTabela(List<Projeto> lista) {
-        try {
-            service.carregarProjetos();
-        } catch (Exception e) {
-            System.err.println(e);
-        }
-
         modelo.setRowCount(0);
 
-        for (Projeto projeto : lista) {
-            modelo.addRow(new Object[]{
-                    projeto.getId(),
-                    projeto.getNome(),
-                    projeto.getDescricao(),
-                    projeto.getCategoria(),
-                    projeto.getStatus()
-            });
+        if (lista != null) {
+            for (Projeto projeto : lista) {
+                modelo.addRow(new Object[]{
+                        projeto.getId(),
+                        projeto.getNome(),
+                        projeto.getDescricao(),
+                        projeto.getCategoria(),
+                        projeto.getStatus()
+                });
+            }
+        }
+    }
+
+    private void iniciarAutoReload() {
+        // Recarrega automaticamente a cada 10 segundos preservando a seleção do usuário
+        timerAutoReload = new Timer(10000, e -> {
+            int linhaSel = tabela.getSelectedRow();
+            recarregarDados();
+            if (linhaSel != -1 && linhaSel < tabela.getRowCount()) {
+                tabela.setRowSelectionInterval(linhaSel, linhaSel);
+            }
+            atualizarTelaGraficosSeAberta();
+        });
+        timerAutoReload.setRepeats(true);
+        timerAutoReload.start();
+    }
+
+    private void abrirTelaGraficos() {
+        if (telaGraficos == null || !telaGraficos.isDisplayable()) {
+            telaGraficos = new TelaGraficos(this.service);
+        }
+        telaGraficos.setVisible(true);
+        telaGraficos.toFront();
+        telaGraficos.atualizarGraficos();
+    }
+
+    private void atualizarTelaGraficosSeAberta() {
+        if (telaGraficos != null && telaGraficos.isDisplayable() && telaGraficos.isVisible()) {
+            telaGraficos.atualizarGraficos();
         }
     }
 }
