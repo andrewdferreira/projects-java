@@ -1,6 +1,51 @@
 id;nome;descricao;categoria;status
-2;Site Institucional;Site da escola;Software;Planejado
-3;Aplicativo Mobile;Aplicativo de Serviços;Mobile;Cancelado
-4;Marketplace de Peixes;Aplicativo de venda de peixes;desktop;em-andamento
-5;Venda de Pendrive;Marketplace de pendrives;desktop;concluido
-6;Projeto Sigma;Sigma;Web;Planejado
+1;Portal do Aluno;Plataforma web para consulta de notas e materiais didáticos;Web;Concluído
+2;App de Entregas Rápidas;Aplicativo mobile para rastreamento de entregas urbanas;Mobile;Em andamento
+3;Sistema de Gestão de Estoque;Software para controle de entradas e saídas de mercadorias;Software;Concluído
+4;Pipeline CI/CD Automatizado;Estrutura de automação de testes e deploys na nuvem;Outros;Planejado
+5;E-commerce de Roupas Sustentáveis;Loja virtual com catálogo e checkout integrado;Web;Em andamento
+6;Gerenciador Financeiro Pessoal;Aplicativo mobile para controle de receitas e despesas mensais;Mobile;Concluído
+7;Emissor de Notas Fiscais;Software de integração com a SEFAZ para emissão de NFe;Software;Em andamento
+8;Monitor de Sensores IoT;Sistema de coleta de dados de sensores ambientais em tempo real;Outros;Planejado
+9;Plataforma de Cursos Online;Portal web com streaming de videoaulas e certificados;Web;Planejado
+10;App de Treino e Saúde;Aplicativo para registro de treinos físicos e rotinas diárias;Mobile;Em andamento
+11;Conversor de Formatos de Vídeo;Ferramenta de conversão e compressão de mídias;Software;Concluído
+12;Bot de Notificações Telegram;Serviço de alerta de status de servidores e incidentes;Outros;Concluído
+13;Dashboard de Vendas B2B;Painel web com gráficos e métricas de desempenho comercial;Web;Concluído
+14;Carteira Digital Cripto;Aplicativo mobile para custódia e transações de criptoativos;Mobile;Planejado
+15;Leitor e Indexador de PDFs;Utilitário de extração e indexação de texto em documentos;Software;Em andamento
+16;Infraestrutura de Rede Zero Trust;Projeto de arquitetura de segurança e túneis criptografados;Outros;Planejado
+17;Site Institucional de Consultoria;Página institucional responsiva com agendamento de reuniões;Web;Concluído
+18;Guia Turístico Urbano;Aplicativo mobile com mapas offline e pontos turísticos;Mobile;Concluído
+19;Sincronizador de Backup em Nuvem;Software cliente de replicação de arquivos confidenciais;Software;Em andamento
+20;Cluster Kubernetes On-Premise;Implementação de orquestração de contêineres interna;Outros;Concluído
+21;Marketplace de Produtores Locais;Plataforma web que conecta agricultores familiares a clientes;Web;Em andamento
+22;Comanda Eletrônica para Restaurantes;Aplicativo mobile para garçons registrarem pedidos nas mesas;Mobile;Concluído
+23;Analisador de Logs do Sistema;Software para inspeção e auditoria de logs de servidores;Software;Planejado
+24;Firmware para Estação Meteorológica;Código embarcado em microcontrolador ESP32 para telemetria;Outros;Em andamento
+25;Blog e Portal de Notícias Tech;Portal web com painel administrativo e sistema de comentários;Web;Concluído
+26;Agendamento de Consultas Médicas;Aplicativo mobile para marcação de consultas e exames;Mobile;Em andamento
+27;Calculadora Salarial e Tributária;Software de cálculo de folha de pagamento e tributos trabalhistas;Software;Concluído
+28;Pipeline de Processamento ETL;Rotina de extração e carga de dados de múltiplos bancos relacionais;Outros;Concluído
+29;Sistema de Ouvidoria Cidadã;Portal web para registro e acompanhamento de chamados públicos;Web;Planejado
+30;App de Adoção de Animais;Aplicativo mobile com fotos e chat para adoção responsável;Mobile;Planejado
+31;Gerenciador de Tarefas Kanban;Software para organização de tarefas e fluxos de equipes;Software;Em andamento
+32;Script de Sanitização de Base de Dados;Automação em lote para normalização de cadastros legados;Outros;Concluído
+33;Rede Social Corporativa;Plataforma web interna de comunicação e fórum entre colaboradores;Web;Em andamento
+34;Controle de Manutenção Veicular;Aplicativo mobile com lembretes de revisão e abastecimento;Mobile;Concluído
+35;Editor de Texto Minimalista;Software de edição de notas em formato Markdown com abas;Software;Planejado
+36;Módulo de Autenticação Biometria Facial;Serviço de reconhecimento facial para controle de catracas;Outros;Em andamento
+37;Catálogo de Imóveis e Aluguéis;Portal web de busca de imóveis com filtros por localização;Web;Concluído
+38;Leitor de Cartões de Visita;Aplicativo mobile com OCR para digitalização rápida de contatos;Mobile;Em andamento
+39;Simulador de Circuitos Digitais;Software educacional para projeto de portas lógicas e circuitos;Software;Concluído
+40;Configurador de Switch e Roteador;Script para automação de configurações em lote de rede;Outros;Planejado
+41;Portal de Reservas de Espaços;Sistema web para locação de salas de reunião e coworking;Web;Planejado
+42;Aplicativo de Carona Solidária;App mobile universitário para compartilhamento de viagens diárias;Mobile;Planejado
+43;Monitor de Recursos de Hardware;Software com widget de monitoramento de uso de CPU e memória RAM;Software;Em andamento
+44;Coletor de Métricas Prometheus;Agente de coleta de telemetria de aplicações legadas;Outros;Concluído
+45;Plataforma de Crowdfunding;Portal web para financiamento coletivo com metas e recompensas;Web;Em andamento
+46;App de Meditação e Respiração;Aplicativo mobile com áudios guiados e cronômetro de mindfulness;Mobile;Concluído
+47;Gerenciador de Senhas Criptografado;Software de armazenamento local seguro com chave mestra;Software;Concluído
+48;Scanner de Vulnerabilidades de Rede;Utilitário de varredura de portas e verificação de serviços expostos;Outros;Em andamento
+49;Central de Atendimento ao Cliente;Portal web com chat ao vivo e base de conhecimento integrada;Web;Concluído
+50;Lista de Compras Inteligente;Aplicativo mobile que agrupa itens por seção de supermercado;Mobile;Planejado
