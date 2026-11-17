@@ -163,9 +163,19 @@ function FecharModal() {
 // === FUNÇÕES DE FILTRO E RENDERIZAÇÃO ===
 
 async function Exibir() {
-    const resposta = await fetch(`${url}/api/projetos`);
-    listaProjetos = await resposta.json();
-    AplicarFiltros(); // Mantém os filtros ativos mesmo após cadastrar/editar/excluir
+    try {
+        const resposta = await fetch(`${url}/api/projetos`);
+        if (resposta.ok) {
+            listaProjetos = await resposta.json();
+            AplicarFiltros(); // Mantém os filtros ativos mesmo após cadastrar/editar/excluir
+            const modalGraficos = document.getElementById("modalGraficos");
+            if (modalGraficos && modalGraficos.style.display === "flex") {
+                RenderizarGraficos(listaProjetos);
+            }
+        }
+    } catch (err) {
+        console.error("Erro ao carregar projetos:", err);
+    }
 }
 
 function AplicarFiltros() {
@@ -241,12 +251,23 @@ async function AbrirModalGraficos() {
     if (!modal) return;
     modal.style.display = "flex";
 
+    // Se já tivermos dados locais em cache, renderiza de imediato
+    if (listaProjetos && listaProjetos.length > 0) {
+        RenderizarGraficos(listaProjetos);
+    }
+
     try {
         const resposta = await fetch(`${url}/api/projetos`);
-        const projetos = await resposta.json();
-        RenderizarGraficos(projetos);
+        if (resposta.ok) {
+            const projetos = await resposta.json();
+            listaProjetos = projetos;
+            RenderizarGraficos(projetos);
+        }
     } catch (err) {
         console.error("Erro ao buscar dados para os gráficos:", err);
+        if (listaProjetos) {
+            RenderizarGraficos(listaProjetos);
+        }
     }
 }
 
@@ -318,12 +339,12 @@ function RenderizarGraficos(projetos) {
 
 function DesenharPizza(canvasId, legendaId, dados, mapaCores) {
     const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
     const legenda = document.getElementById(legendaId);
-    if (!canvas || !legenda) return;
 
     const ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    legenda.innerHTML = "";
+    if (legenda) legenda.innerHTML = "";
 
     const total = Object.values(dados).reduce((a, b) => a + b, 0);
 
@@ -331,6 +352,7 @@ function DesenharPizza(canvasId, legendaId, dados, mapaCores) {
         ctx.fillStyle = "#64766e";
         ctx.font = "14px 'DM Sans', sans-serif";
         ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
         ctx.fillText("Nenhum dado cadastrado", canvas.width / 2, canvas.height / 2);
         return;
     }
@@ -338,7 +360,7 @@ function DesenharPizza(canvasId, legendaId, dados, mapaCores) {
     const centroX = canvas.width / 2;
     const centroY = canvas.height / 2;
     const raio = Math.min(centroX, centroY) - 10;
-    const paletaPadrao = ["#2563eb", "#0d9488", "#7c3aed", "#f59e0b", "#10b981", "#ec4899", "#06b6d4"];
+    const paletaPadrao = ["#2563eb", "#176b51", "#7c3aed", "#f59e0b", "#10b981", "#ec4899", "#06b6d4"];
 
     let anguloAtual = -0.5 * Math.PI; // Inicia no topo
     let corIdx = 0;
@@ -365,33 +387,41 @@ function DesenharPizza(canvasId, legendaId, dados, mapaCores) {
 
         anguloAtual += fatiaAngulo;
 
-        // Adicionar item na legenda
-        const percentual = ((valor / total) * 100).toFixed(1);
-        const itemLegenda = document.createElement("div");
-        itemLegenda.style.display = "flex";
-        itemLegenda.style.alignItems = "center";
-        itemLegenda.style.gap = "8px";
-        itemLegenda.innerHTML = `
-            <span style="display:inline-block; width:12px; height:12px; border-radius:3px; background:${cor};"></span>
-            <strong>${chave}:</strong> <span>${valor} (${percentual}%)</span>
-        `;
-        legenda.appendChild(itemLegenda);
+        // Adicionar item na legenda se o container existir
+        if (legenda) {
+            const percentual = ((valor / total) * 100).toFixed(1);
+            const itemLegenda = document.createElement("div");
+            itemLegenda.style.display = "flex";
+            itemLegenda.style.alignItems = "center";
+            itemLegenda.style.gap = "8px";
+            itemLegenda.style.fontSize = "13px";
+            itemLegenda.innerHTML = `
+                <span style="display:inline-block; width:12px; height:12px; border-radius:3px; background:${cor}; flex-shrink:0;"></span>
+                <strong style="color: var(--ink);">${chave}:</strong> <span style="color: var(--muted);">${valor} (${percentual}%)</span>
+            `;
+            legenda.appendChild(itemLegenda);
+        }
     }
 
     // Efeito Donut no centro
     ctx.beginPath();
-    ctx.arc(centroX, centroY, raio * 0.5, 0, 2 * Math.PI);
+    ctx.arc(centroX, centroY, raio * 0.52, 0, 2 * Math.PI);
     ctx.fillStyle = "#ffffff";
     ctx.fill();
     ctx.strokeStyle = "#dce6df";
     ctx.lineWidth = 1;
     ctx.stroke();
 
-    ctx.fillStyle = "#18342b";
-    ctx.font = "bold 14px 'Space Grotesk', sans-serif";
+    // Rótulo "TOTAL" e valor no centro do Donut
+    ctx.fillStyle = "#64766e";
+    ctx.font = "bold 10px 'DM Sans', sans-serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(`${total}`, centroX, centroY);
+    ctx.fillText("TOTAL", centroX, centroY - 8);
+
+    ctx.fillStyle = "#18342b";
+    ctx.font = "bold 16px 'Space Grotesk', sans-serif";
+    ctx.fillText(`${total}`, centroX, centroY + 10);
 }
 
 function normalizar(str) {
@@ -418,18 +448,6 @@ Exibir();
 // Reload automático a cada 10 segundos na view Web
 setInterval(async () => {
     await Exibir();
-    const modalGraficos = document.getElementById("modalGraficos");
-    if (modalGraficos && modalGraficos.style.display === "flex") {
-        try {
-            const resp = await fetch(`${url}/api/projetos`);
-            if (resp.ok) {
-                const dados = await resp.json();
-                RenderizarGraficos(dados);
-            }
-        } catch (err) {
-            console.error("Erro no auto-reload dos gráficos Web:", err);
-        }
-    }
 }, 10000);
 
 document.addEventListener("DOMContentLoaded", Exibir);

@@ -99,7 +99,6 @@
                     </button>
                 </div>
             </div>
-            </div>
             <div class="table-frame">
               <div class="table-scroll">
                 <table class="tabela-projetos">
@@ -127,56 +126,58 @@
             </div>
         </div>
 
-        <div class="modal-overlay" id="modalGraficos" style="display: none;">
-    <div class="modal-content-custom" style="max-width: 820px; padding: 24px;">
-        <div class="section-heading" style="border-bottom: 1px solid var(--line); padding-bottom: 14px; margin-bottom: 20px;">
-            <div>
-                <p class="eyebrow">DASHBOARD ESTATÍSTICO</p>
-                <h2>Gráficos de Pizza dos Projetos</h2>
-            </div>
-            <button class="button button-quiet" type="button" onclick="FecharModalGraficos()" style="cursor: pointer;">Fechar ✕</button>
-        </div>
+        <div class="modal-overlay" id="modalGraficos" style="display: none;" onclick="if(event.target === this) FecharModalGraficos()">
+            <div class="modal-content-custom" style="max-width: 820px; padding: 24px;">
+                <div class="section-heading" style="border-bottom: 1px solid var(--line); padding-bottom: 14px; margin-bottom: 20px;">
+                    <div>
+                        <p class="eyebrow">DASHBOARD ESTATÍSTICO</p>
+                        <h2>Gráficos de Pizza dos Projetos</h2>
+                    </div>
+                    <button class="button button-quiet" type="button" onclick="FecharModalGraficos()" style="cursor: pointer;">Fechar ✕</button>
+                </div>
 
-        <!-- Cards de KPI -->
-        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px;">
-            <div style="background: var(--canvas); border-top: 3px solid #2563eb; padding: 12px; border-radius: 6px;">
-                <span style="font-size: 11px; font-weight: 700; color: var(--muted);">TOTAL</span>
-                <h3 id="kpiTotal" style="margin: 4px 0 0; font-size: 22px; color: var(--ink);">0</h3>
-            </div>
-            <div style="background: var(--canvas); border-top: 3px solid #10b981; padding: 12px; border-radius: 6px;">
-                <span style="font-size: 11px; font-weight: 700; color: var(--muted);">CONCLUÍDOS</span>
-                <h3 id="kpiConcluidos" style="margin: 4px 0 0; font-size: 22px; color: var(--ink);">0</h3>
-            </div>
-            <div style="background: var(--canvas); border-top: 3px solid #f59e0b; padding: 12px; border-radius: 6px;">
-                <span style="font-size: 11px; font-weight: 700; color: var(--muted);">EM ANDAMENTO</span>
-                <h3 id="kpiAndamento" style="margin: 4px 0 0; font-size: 22px; color: var(--ink);">0</h3>
-            </div>
-            <div style="background: var(--canvas); border-top: 3px solid #8b5cf6; padding: 12px; border-radius: 6px;">
-                <span style="font-size: 11px; font-weight: 700; color: var(--muted);">PLANEJADOS</span>
-                <h3 id="kpiPlanejados" style="margin: 4px 0 0; font-size: 22px; color: var(--ink);">0</h3>
-            </div>
-        </div>
+                <!-- Cards de KPI -->
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px;">
+                    <div style="background: var(--canvas); border-top: 3px solid #2563eb; padding: 12px; border-radius: 6px;">
+                        <span style="font-size: 11px; font-weight: 700; color: var(--muted);">TOTAL</span>
+                        <h3 id="kpiTotal" style="margin: 4px 0 0; font-size: 22px; color: var(--ink);">0</h3>
+                    </div>
+                    <div style="background: var(--canvas); border-top: 3px solid #10b981; padding: 12px; border-radius: 6px;">
+                        <span style="font-size: 11px; font-weight: 700; color: var(--muted);">CONCLUÍDOS</span>
+                        <h3 id="kpiConcluidos" style="margin: 4px 0 0; font-size: 22px; color: var(--ink);">0</h3>
+                    </div>
+                    <div style="background: var(--canvas); border-top: 3px solid #f59e0b; padding: 12px; border-radius: 6px;">
+                        <span style="font-size: 11px; font-weight: 700; color: var(--muted);">EM ANDAMENTO</span>
+                        <h3 id="kpiAndamento" style="margin: 4px 0 0; font-size: 22px; color: var(--ink);">0</h3>
+                    </div>
+                    <div style="background: var(--canvas); border-top: 3px solid #8b5cf6; padding: 12px; border-radius: 6px;">
+                        <span style="font-size: 11px; font-weight: 700; color: var(--muted);">PLANEJADOS</span>
+                        <h3 id="kpiPlanejados" style="margin: 4px 0 0; font-size: 22px; color: var(--ink);">0</h3>
+                    </div>
+                </div>
 
-        <!-- Gráficos de Pizza Lado a Lado -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-            <!-- Gráfico Categoria -->
-            <div style="background: #fafdfa; border: 1px solid var(--line); border-radius: 8px; padding: 16px; text-align: center;">
-                <h3 style="font-size: 15px; margin: 0 0 12px; color: var(--ink);">Distribuição por Categoria</h3>
-                <div style="position: relative; height: 200px; width: 100%;">
-                    <canvas id="canvasCategorias"></canvas>
+                <!-- Gráficos de Pizza Lado a Lado -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <!-- Gráfico Categoria -->
+                    <div style="background: #fafdfa; border: 1px solid var(--line); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; align-items: center;">
+                        <h3 style="font-size: 15px; margin: 0 0 14px; color: var(--ink); width: 100%; text-align: left;">Distribuição por Categoria</h3>
+                        <div style="position: relative; display: flex; justify-content: center; align-items: center; width: 100%; margin-bottom: 12px;">
+                            <canvas id="canvasCategorias" width="220" height="220"></canvas>
+                        </div>
+                        <div id="legendaCategorias" style="display: flex; flex-direction: column; gap: 8px; width: 100%; padding-top: 12px; border-top: 1px solid var(--line);"></div>
+                    </div>
+
+                    <!-- Gráfico Status -->
+                    <div style="background: #fafdfa; border: 1px solid var(--line); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; align-items: center;">
+                        <h3 style="font-size: 15px; margin: 0 0 14px; color: var(--ink); width: 100%; text-align: left;">Distribuição por Status</h3>
+                        <div style="position: relative; display: flex; justify-content: center; align-items: center; width: 100%; margin-bottom: 12px;">
+                            <canvas id="canvasStatus" width="220" height="220"></canvas>
+                        </div>
+                        <div id="legendaStatus" style="display: flex; flex-direction: column; gap: 8px; width: 100%; padding-top: 12px; border-top: 1px solid var(--line);"></div>
+                    </div>
                 </div>
             </div>
-
-            <!-- Gráfico Status -->
-            <div style="background: #fafdfa; border: 1px solid var(--line); border-radius: 8px; padding: 16px; text-align: center;">
-                <h3 style="font-size: 15px; margin: 0 0 12px; color: var(--ink);">Distribuição por Status</h3>
-                <div style="position: relative; height: 200px; width: 100%;">
-                    <canvas id="canvasStatus"></canvas>
-                </div>
-            </div>
         </div>
-    </div>
-</div>
     </main>
 </body>
 </html>
