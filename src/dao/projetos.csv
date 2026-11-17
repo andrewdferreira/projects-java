@@ -2,4 +2,5 @@ id;nome;descricao;categoria;status
 2;Site Institucional;Site da escola;web;concluido
 3;Aplicativo Mobile;Aplicativo de Serviços;Mobile;Planejado
 4;Marketplace de Peixes;Aplicativo de venda de peixes;desktop;em-andamento
-5;Venda de Pendrive;Marketplace de pendrives;Mobile;Concluído
+5;Venda de Pendrive;Marketplace de pendrives;desktop;concluido
+6;Projeto Sigma;Sigma;Web;Planejado

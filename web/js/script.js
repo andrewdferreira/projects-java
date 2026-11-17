@@ -1,4 +1,5 @@
 const url = "http://localhost:7070";
+let listaProjetos = []; // Cache local dos projetos carregados da API
 
 async function Cadastrar(event) {
     event.preventDefault();
@@ -13,8 +14,6 @@ async function Cadastrar(event) {
         categoria,
         status,
     };
-
-    console.log(enviar);
 
     await fetch(`${url}/api/projetos`, {
         method: "POST",
@@ -57,10 +56,7 @@ async function DeletarSelecionado() {
 }
 
 async function CarregarSelecionado() {
-    const resposta = await fetch(`${url}/api/projetos`);
-    const projetos = await resposta.json();
     let feedback = document.getElementById("feedback");
-
     feedback.textContent = "";
 
     const checkboxes = document.querySelectorAll(`.projetos-select:checked`);
@@ -77,7 +73,7 @@ async function CarregarSelecionado() {
     }
 
     const idSelecionado = ids[0];
-    const projeto = projetos.find(p => p.id == idSelecionado);
+    const projeto = listaProjetos.find(p => p.id == idSelecionado);
 
     if (!projeto) {
         feedback.textContent = "Projeto não encontrado.";
@@ -105,17 +101,17 @@ async function CarregarSelecionado() {
                     <label class="field">
                         <span>Categoria</span>
                         <select id="categoriaEditar" name="categoria" required>
-                            <option value="web" ${projeto.categoria === "web" ? "selected" : ""}>Web</option>
-                            <option value="mobile" ${projeto.categoria === "mobile" ? "selected" : ""}>Mobile</option>
-                            <option value="desktop" ${projeto.categoria === "desktop" ? "selected" : ""}>Software</option>
-                            <option value="outros" ${projeto.categoria === "outros" ? "selected" : ""}>Outro</option>
+                            <option value="Web" ${projeto.categoria === "Web" ? "selected" : ""}>Web</option>
+                            <option value="Mobile" ${projeto.categoria === "Mobile" ? "selected" : ""}>Mobile</option>
+                            <option value="Desktop" ${projeto.categoria === "Desktop" ? "selected" : ""}>Software</option>
+                            <option value="Outros" ${projeto.categoria === "Outros" ? "selected" : ""}>Outro</option>
                         </select>
                     </label>
                     <label class="field">
                         <span>Status</span>
                         <select id="statusEditar" name="status" required>
-                            <option value="concluido" ${projeto.status === "concluido" ? "selected" : ""}>Concluído</option>
-                            <option value="em-andamento" ${projeto.status === "em-andamento" ? "selected" : ""}>Em Andamento</option>
+                            <option value="Concluído" ${projeto.status === "Concluído" ? "selected" : ""}>Concluído</option>
+                            <option value="Em andamento" ${projeto.status === "Em andamento" ? "selected" : ""}>Em Andamento</option>
                             <option value="Planejado" ${projeto.status === "Planejado" ? "selected" : ""}>Planejado</option>
                         </select>
                     </label>
@@ -146,7 +142,6 @@ async function EditarSelecionado(id) {
         categoria,
         status
     };
-    console.log(enviar);
 
     await fetch(`${url}/api/projetos/${id}`, {
         method: "PUT",
@@ -165,29 +160,276 @@ function FecharModal() {
     meuModal.style.display = "none";
 }
 
+// === FUNÇÕES DE FILTRO E RENDERIZAÇÃO ===
+
 async function Exibir() {
     const resposta = await fetch(`${url}/api/projetos`);
-    const projetos = await resposta.json();
-    let corpo = document.getElementById("projetos-tbody");
+    listaProjetos = await resposta.json();
+    AplicarFiltros(); // Mantém os filtros ativos mesmo após cadastrar/editar/excluir
+}
 
+function AplicarFiltros() {
+    const textoBusca = document.getElementById("campoBusca").value.toLowerCase().trim();
+    const categoriaSelecionada = document.getElementById("filtroCategoria").value;
+    const statusSelecionado = document.getElementById("filtroStatus").value;
+
+    const projetosFiltrados = listaProjetos.filter(p => {
+        const matchBusca = p.nome.toLowerCase().includes(textoBusca) ||
+                           p.descricao.toLowerCase().includes(textoBusca);
+
+        const matchCategoria = categoriaSelecionada === "todas" ||
+                               p.categoria.toLowerCase() === categoriaSelecionada.toLowerCase();
+
+        const matchStatus = statusSelecionado === "todos" ||
+                            p.status.toLowerCase() === statusSelecionado.toLowerCase();
+
+        return matchBusca && matchCategoria && matchStatus;
+    });
+
+    RenderizarTabela(projetosFiltrados);
+}
+
+function LimparFiltros() {
+    document.getElementById("campoBusca").value = "";
+    document.getElementById("filtroCategoria").value = "todas";
+    document.getElementById("filtroStatus").value = "todos";
+    AplicarFiltros();
+}
+
+function RenderizarTabela(projetos) {
+    let corpo = document.getElementById("projetos-tbody");
     corpo.replaceChildren();
 
-    for (const projeto of projetos) {
+    if (projetos.length === 0) {
         corpo.insertAdjacentHTML(
             "beforeend",
             `<tr>
-                <th>${projeto.id}</th>
-                <th>${projeto.nome}</th>
-                <th>${projeto.descricao}</th>
-                <th>${projeto.categoria}</th>
-                <th>${projeto.status}</th>
-                <th>
+                <td colspan="6" style="text-align: center; color: var(--muted); padding: 24px;">
+                    Nenhum projeto encontrado com os filtros aplicados.
+                </td>
+            </tr>`
+        );
+        return;
+    }
+
+    for (const projeto of projetos) {
+        projeto.categoria = projeto.categoria.charAt(0).toUpperCase() + projeto.categoria.slice(1);
+        projeto.status = projeto.status.charAt(0).toUpperCase() + projeto.status.slice(1);
+        corpo.insertAdjacentHTML(
+            "beforeend",
+            `<tr>
+                <td>${projeto.id}</td>
+                <td>${projeto.nome}</td>
+                <td>${projeto.descricao}</td>
+                <td>${projeto.categoria}</td>
+                <td>${projeto.status}</td>
+                <td>
                     <input type="checkbox" id="projeto-${projeto.id}" name="projeto-${projeto.id}" class="projetos-select">
                     <label for="projeto-${projeto.id}"></label>
-                </th>
+                </td>
             </tr>`
         );
     }
 }
 
+/* ========================================================
+   FUNÇÕES DO DASHBOARD DE GRÁFICOS DE PIZZA
+   ======================================================== */
+
+async function AbrirModalGraficos() {
+    const modal = document.getElementById("modalGraficos");
+    if (!modal) return;
+    modal.style.display = "flex";
+
+    try {
+        const resposta = await fetch(`${url}/api/projetos`);
+        const projetos = await resposta.json();
+        RenderizarGraficos(projetos);
+    } catch (err) {
+        console.error("Erro ao buscar dados para os gráficos:", err);
+    }
+}
+
+function FecharModalGraficos() {
+    const modal = document.getElementById("modalGraficos");
+    if (modal) modal.style.display = "none";
+}
+
+function RenderizarGraficos(projetos) {
+    if (!projetos) projetos = [];
+
+    // Contadores
+    const categorias = {};
+    const statusMap = {};
+
+    let concluidos = 0;
+    let andamento = 0;
+    let planejados = 0;
+
+    projetos.forEach(p => {
+        // Normalização de categoria
+        let cat = normalizar(p.categoria);
+        if (cat.includes("web")) cat = "Web";
+        else if (cat.includes("soft") || cat.includes("desk")) cat = "Software";
+        else if (cat.includes("mobi")) cat = "Mobile";
+        else cat = "Outros";
+
+        categorias[cat] = (categorias[cat] || 0) + 1;
+
+        // Normalização de status
+        let st = normalizar(p.status);
+        if (st.includes("conclu")) {
+            st = "Concluído";
+            concluidos++;
+        } else if (st.includes("andamento") || st.includes("desenvolvimento")) {
+            st = "Em andamento";
+            andamento++;
+        } else {
+            st = "Planejado";
+            planejados++;
+        }
+
+        statusMap[st] = (statusMap[st] || 0) + 1;
+    });
+
+    // Atualizar KPIs
+    document.getElementById("kpiTotal").textContent = projetos.length;
+    document.getElementById("kpiConcluidos").textContent = `${concluidos} (${projetos.length ? Math.round(concluidos * 100 / projetos.length) : 0}%)`;
+    document.getElementById("kpiAndamento").textContent = andamento;
+    document.getElementById("kpiPlanejados").textContent = planejados;
+
+    // Cores padronizadas para categorias
+    const coresCat = {
+        "Web": "#2563eb",
+        "Software": "#176b51",
+        "Mobile": "#7c3aed",
+        "Outros": "#f59e0b"
+    };
+
+    const coresSt = {
+        "Concluído": "#10b981",
+        "Em andamento": "#3b82f6",
+        "Planejado": "#8b5cf6"
+    };
+
+    DesenharPizza("canvasCategorias", "legendaCategorias", categorias, coresCat);
+    DesenharPizza("canvasStatus", "legendaStatus", statusMap, coresSt);
+}
+
+function DesenharPizza(canvasId, legendaId, dados, mapaCores) {
+    const canvas = document.getElementById(canvasId);
+    const legenda = document.getElementById(legendaId);
+    if (!canvas || !legenda) return;
+
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    legenda.innerHTML = "";
+
+    const total = Object.values(dados).reduce((a, b) => a + b, 0);
+
+    if (total === 0) {
+        ctx.fillStyle = "#64766e";
+        ctx.font = "14px 'DM Sans', sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText("Nenhum dado cadastrado", canvas.width / 2, canvas.height / 2);
+        return;
+    }
+
+    const centroX = canvas.width / 2;
+    const centroY = canvas.height / 2;
+    const raio = Math.min(centroX, centroY) - 10;
+    const paletaPadrao = ["#2563eb", "#0d9488", "#7c3aed", "#f59e0b", "#10b981", "#ec4899", "#06b6d4"];
+
+    let anguloAtual = -0.5 * Math.PI; // Inicia no topo
+    let corIdx = 0;
+
+    for (const [chave, valor] of Object.entries(dados)) {
+        if (valor <= 0) continue;
+
+        const fatiaAngulo = (valor / total) * 2 * Math.PI;
+        const cor = mapaCores[chave] || paletaPadrao[corIdx % paletaPadrao.length];
+        corIdx++;
+
+        // Desenho da fatia
+        ctx.beginPath();
+        ctx.moveTo(centroX, centroY);
+        ctx.arc(centroX, centroY, raio, anguloAtual, anguloAtual + fatiaAngulo);
+        ctx.closePath();
+        ctx.fillStyle = cor;
+        ctx.fill();
+
+        // Linha divisória
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        anguloAtual += fatiaAngulo;
+
+        // Adicionar item na legenda
+        const percentual = ((valor / total) * 100).toFixed(1);
+        const itemLegenda = document.createElement("div");
+        itemLegenda.style.display = "flex";
+        itemLegenda.style.alignItems = "center";
+        itemLegenda.style.gap = "8px";
+        itemLegenda.innerHTML = `
+            <span style="display:inline-block; width:12px; height:12px; border-radius:3px; background:${cor};"></span>
+            <strong>${chave}:</strong> <span>${valor} (${percentual}%)</span>
+        `;
+        legenda.appendChild(itemLegenda);
+    }
+
+    // Efeito Donut no centro
+    ctx.beginPath();
+    ctx.arc(centroX, centroY, raio * 0.5, 0, 2 * Math.PI);
+    ctx.fillStyle = "#ffffff";
+    ctx.fill();
+    ctx.strokeStyle = "#dce6df";
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    ctx.fillStyle = "#18342b";
+    ctx.font = "bold 14px 'Space Grotesk', sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(`${total}`, centroX, centroY);
+}
+
+function normalizar(str) {
+    return (str || "").toLowerCase().trim();
+}
+
+function comparaValores(str1, str2) {
+    return normalizar(str1).includes(normalizar(str2));
+}
+
+function escapeHtml(text) {
+    if (!text) return "";
+    return String(text)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+// Inicia listagem ao carregar
 Exibir();
+
+// Reload automático a cada 10 segundos na view Web
+setInterval(async () => {
+    await Exibir();
+    const modalGraficos = document.getElementById("modalGraficos");
+    if (modalGraficos && modalGraficos.style.display === "flex") {
+        try {
+            const resp = await fetch(`${url}/api/projetos`);
+            if (resp.ok) {
+                const dados = await resp.json();
+                RenderizarGraficos(dados);
+            }
+        } catch (err) {
+            console.error("Erro no auto-reload dos gráficos Web:", err);
+        }
+    }
+}, 10000);
+
+document.addEventListener("DOMContentLoaded", Exibir);

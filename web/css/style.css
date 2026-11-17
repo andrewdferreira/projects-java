@@ -404,3 +404,64 @@ form {
         padding: 12px;
     }
 }
+
+.table-heading {
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+.filter-input,
+.filter-select {
+    height: 40px;
+    padding: 0 12px;
+    color: var(--ink);
+    background: var(--surface);
+    border: 1px solid #cbd8cf;
+    border-radius: 5px;
+    font: 400 13px 'DM Sans', sans-serif;
+    transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+
+.filter-input {
+    width: 210px;
+}
+
+.filter-input::placeholder {
+    color: #97a49c;
+}
+
+.filter-input:focus,
+.filter-select:focus {
+    outline: none;
+    border-color: var(--green);
+    box-shadow: 0 0 0 3px rgb(23 107 81 / 13%);
+}
+
+@media (max-width: 768px) {
+    .filter-bar {
+        width: 100%;
+    }
+
+    .filter-input,
+    .filter-select,
+    .filter-bar .button {
+        flex: 1 1 100%;
+        width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    #modalGraficos .modal-content-custom > div:nth-child(2) {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+    #modalGraficos .modal-content-custom > div:nth-child(3) {
+        grid-template-columns: 1fr !important;
+    }
+}
